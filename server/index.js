@@ -3,7 +3,7 @@ const path = require("path");
 const next = require("next");
 const bodyParser = require("koa-body");
 const Router = require("koa-router");
-const cookie = require("koa-cookie");
+const cookie = require("koa-cookie").default;
 const admin = require("firebase-admin");
 const serviceAccount = require("../serviceAccount.json");
 
@@ -38,8 +38,70 @@ app.prepare().then(() => {
 
   server.proxy = true;
   server.use(bodyParser());
-  server.use(cookie());
 
+  router.use(cookie());
+  router.use(async (ctx, next) => {
+    const { req, request, cookies, res, params, query } = ctx;
+
+    if (!request.path.startsWith("/api/")) {
+      await next();
+      return;
+    }
+
+    console.log("Check if request is authorized with Firebase ID token");
+    console.log("cookies", cookies);
+    console.log(req.headers, req.cookies, request.headers, request.cookies);
+    if (
+      (!req.headers.authorization ||
+        !req.headers.authorization.startsWith("Bearer ")) &&
+      !(cookies && cookies.__session)
+    ) {
+      console.error(
+        "No Firebase ID token was passed as a Bearer token in the Authorization header.",
+        "Make sure you authorize your request by providing the following HTTP header:",
+        "Authorization: Bearer <Firebase ID Token>",
+        'or by passing a "__session" cookie.'
+      );
+      // ctx.res.statusCode = 403;
+      // ctx.res.body = "Unauthorized";
+      // return;
+    }
+
+    let idToken;
+    if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith("Bearer ")
+    ) {
+      console.log('Found "Authorization" header');
+      // Read the ID Token from the Authorization header.
+      idToken = req.headers.authorization.split("Bearer ")[1];
+    } else if (cookies) {
+      console.log('Found "__session" cookie');
+      // Read the ID Token from cookie.
+      idToken = cookies.__session;
+    } else {
+      // No cookie
+      // ctx.res.statusCode = 403;
+      // ctx.res.body = "Unauthorized";
+      // return;
+    }
+
+    console.log(idToken);
+    try {
+      const decodedIdToken = admin
+        .auth()
+        .verifyIdToken(idToken)
+        .then(async decodedIdToken => {});
+      console.log("ID Token correctly decoded", decodedIdToken);
+      ctx.req.user = decodedIdToken;
+    } catch (error) {
+      // console.error("Error while verifying Firebase ID token:", error);
+      // ctx.res.statusCode = 403;
+      // ctx.res.body = "Unauthorized";
+    }
+
+    await next();
+  });
   router.get("/auth/github", async ctx => {
     const body = ctx.request.body;
     const { req, res, params, ip } = ctx;
@@ -123,68 +185,6 @@ app.prepare().then(() => {
 
   server.use(async (ctx, next) => {
     ctx.res.statusCode = 200;
-    await next();
-  });
-
-  server.use(async (ctx, next) => {
-    const { req, request, cookies, res, params, query } = ctx;
-
-    if (!request.path.startsWith("/api/")) {
-      await next();
-      return;
-    }
-
-    console.log("Check if request is authorized with Firebase ID token");
-    console.log(req.headers, req.cookies, request.headers, request.cookies);
-    if (
-      (!req.headers.authorization ||
-        !req.headers.authorization.startsWith("Bearer ")) &&
-      !(cookies && cookies.__session)
-    ) {
-      console.error(
-        "No Firebase ID token was passed as a Bearer token in the Authorization header.",
-        "Make sure you authorize your request by providing the following HTTP header:",
-        "Authorization: Bearer <Firebase ID Token>",
-        'or by passing a "__session" cookie.'
-      );
-      // ctx.res.statusCode = 403;
-      // ctx.res.body = "Unauthorized";
-      // return;
-    }
-
-    let idToken;
-    if (
-      req.headers.authorization &&
-      req.headers.authorization.startsWith("Bearer ")
-    ) {
-      console.log('Found "Authorization" header');
-      // Read the ID Token from the Authorization header.
-      idToken = req.headers.authorization.split("Bearer ")[1];
-    } else if (cookies) {
-      console.log('Found "__session" cookie');
-      // Read the ID Token from cookie.
-      idToken = cookies.__session;
-    } else {
-      // No cookie
-      // ctx.res.statusCode = 403;
-      // ctx.res.body = "Unauthorized";
-      // return;
-    }
-
-    console.log(idToken);
-    try {
-      const decodedIdToken = admin
-        .auth()
-        .verifyIdToken(idToken)
-        .then(async decodedIdToken => {});
-      console.log("ID Token correctly decoded", decodedIdToken);
-      ctx.req.user = decodedIdToken;
-    } catch (error) {
-      // console.error("Error while verifying Firebase ID token:", error);
-      // ctx.res.statusCode = 403;
-      // ctx.res.body = "Unauthorized";
-    }
-
     await next();
   });
 
