@@ -17,13 +17,11 @@
     "firebase": "^5.3.1",
     "firebase-admin": "^5.13.1",
     "firebase-tools": "^4.0.3",
-    "global": "^4.3.2",
     "koa": "^2.5.2",
     "koa-body": "^4.0.4",
     "koa-cookie": "^1.0.0",
     "koa-router": "^7.4.0",
     "next": "^6.1.1",
-    "passport-github": "^1.1.0",
     "react": "^16.4.2",
     "react-dom": "^16.4.2"
   },
