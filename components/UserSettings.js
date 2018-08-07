@@ -1,5 +1,6 @@
 import React from "react";
 import axios from "axios";
+import firebase from "firebase";
 
 export default class UserSettings extends React.Component {
   constructor(props) {
@@ -10,6 +11,7 @@ export default class UserSettings extends React.Component {
   async componentDidMount() {
     console.log("did mount");
     const idToken = await firebase.auth().currentUser?.getIdToken();
+    console.log("id token", idToken);
     const token = await axios.get("/api/token/", {
       headers: {
         Authorization: `Bearer ${idToken}`
@@ -20,7 +22,12 @@ export default class UserSettings extends React.Component {
 
   handleGetToken = async () => {
     console.log("get token");
-    const token = await axios.post("/api/token/");
+    const idToken = await firebase.auth().currentUser?.getIdToken();
+    const token = await axios.post("/api/token/", {
+      headers: {
+        Authorization: `Bearer ${idToken}`
+      }
+    });
     // this.setState({ token });
   };
   render() {
