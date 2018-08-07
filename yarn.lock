@@ -846,22 +846,6 @@
     pkg-up "^2.0.0"
     through2 "^2.0.3"
 
-"@google-cloud/firestore@^0.16.0":
-  version "0.16.0"
-  resolved "https://registry.yarnpkg.com/@google-cloud/firestore/-/firestore-0.16.0.tgz#1b39469b41625430ffc2d25b1c1d5696e5381c42"
-  dependencies:
-    "@google-cloud/projectify" "^0.3.0"
-    bun "^0.0.12"
-    deep-equal "^1.0.1"
-    extend "^3.0.1"
-    functional-red-black-tree "^1.0.1"
-    google-gax "^0.17.1"
-    google-proto-files "^0.16.1"
-    is "^3.2.1"
-    lodash.merge "^4.6.1"
-    pkg-up "^2.0.0"
-    through2 "^2.0.3"
-
 "@google-cloud/functions-emulator@^1.0.0-beta.4":
   version "1.0.0-beta.5"
   resolved "https://registry.yarnpkg.com/@google-cloud/functions-emulator/-/functions-emulator-1.0.0-beta.5.tgz#08aa14a007b739aadcf7296e0b4354cd8a8d81df"
@@ -886,10 +870,6 @@
     uuid "3.2.1"
     winston "2.4.0"
     yargs "11.0.0"
-
-"@google-cloud/projectify@^0.3.0":
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/@google-cloud/projectify/-/projectify-0.3.0.tgz#adb984ac61f7ec855558ef677621b2488c50d05d"
 
 "@google-cloud/storage@^1.6.0", "@google-cloud/storage@^1.7.0":
   version "1.7.0"

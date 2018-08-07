@@ -5,25 +5,22 @@ const bodyParser = require("koa-body");
 const Router = require("koa-router");
 const cookie = require("koa-cookie").default;
 const admin = require("firebase-admin");
-const Firestore = require("@google-cloud/firestore");
 const uuidv4 = require("uuid/v4");
 
-const serviceAccount = require("../serviceAccount.json");
-
+const credential = admin.credential.cert({
+  projectId: "sercy-2de63",
+  clientEmail: "sercy-server-app@sercy-2de63.iam.gserviceaccount.com",
+  privateKey: process.env.FIREBASE_PRIVATE_KEY,
+});
 if (!admin.apps.length) {
   admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
+    credential,
   });
 }
-const firestore = new Firestore({
-  projectId: "sercy-2de63",
-  keyFilename: "./serviceAccount.json"
-});
-firestore.settings({ timestampsInSnapshots: true });
 
 const app = next({
   dir: path.resolve(__dirname, "../"),
-  dev: process.env.NODE_ENV === "development"
+  dev: process.env.NODE_ENV === "development",
 });
 const defaultHandler = app.getRequestHandler();
 
@@ -49,7 +46,7 @@ app.prepare().then(() => {
     }
 
     console.log("Check if request is authorized with Firebase ID token");
-    console.log("cookies", cookies);
+    // console.log("cookies", cookies);
     if (
       (!req.headers.authorization ||
         !req.headers.authorization.startsWith("Bearer ")) &&
@@ -108,18 +105,18 @@ app.prepare().then(() => {
       return;
     }
 
-    const tokensDoc = firestore.doc("/users/write-tokens");
+    const tokensDoc = admin.firestore().doc("/users/write-tokens");
     const tokens = await tokensDoc.get();
     console.log(tokens.length);
     if (tokens.length) return;
     const token = uuidv4();
     const resp = await tokensDoc.set({
       user: user.uid,
-      token
+      token,
     });
     ctx.res.statusCode = 200;
     ctx.body = {
-      token
+      token,
     };
 
     console.log("created token", token, user.name);
@@ -128,14 +125,15 @@ app.prepare().then(() => {
   router.get("/api/token/", async ctx => {
     const { req, res, user } = ctx;
 
-    const tokensDoc = firestore.doc("/users/write-tokens");
+    const tokensDoc = admin.firestore().doc("/users/write-tokens");
     const token = await tokensDoc.get();
     ctx.body = {
-      token: (token.exists && token.data().token) || null
+      token: (token.exists && token.data().token) || null,
     };
   });
 
   router.post("/api/:token/upload", async ctx => {
+    console.log("upload");
     const body = ctx.request.body;
     const { req, res, params, ip } = ctx;
     console.log("token", params.token);
