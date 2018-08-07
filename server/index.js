@@ -5,6 +5,9 @@ const bodyParser = require("koa-body");
 const Router = require("koa-router");
 const cookie = require("koa-cookie").default;
 const admin = require("firebase-admin");
+const Firestore = require("@google-cloud/firestore");
+const uuidv4 = require("uuid/v4");
+
 const serviceAccount = require("../serviceAccount.json");
 
 if (!admin.apps.length) {
@@ -12,25 +15,17 @@ if (!admin.apps.length) {
     credential: admin.credential.cert(serviceAccount)
   });
 }
+const firestore = new Firestore({
+  projectId: "sercy-2de63",
+  keyFilename: "./serviceAccount.json"
+});
+firestore.settings({ timestampsInSnapshots: true });
 
 const app = next({
   dir: path.resolve(__dirname, "../"),
   dev: process.env.NODE_ENV === "development"
 });
 const defaultHandler = app.getRequestHandler();
-
-const createMeta = (params, query) => {
-  let meta = Object.assign({}, params, query);
-  Object.keys(meta).forEach(key => {
-    meta[key] = encodeURIComponent(meta[key]);
-  });
-  return meta;
-};
-
-// Express middleware that validates Firebase ID Tokens passed in the Authorization HTTP header.
-// The Firebase ID token needs to be passed as a Bearer token in the Authorization HTTP header like this:
-// `Authorization: Bearer <Firebase ID Token>`.
-// when decoded successfully, the ID Token content will be added as `req.user`.
 
 app.prepare().then(() => {
   const server = new Koa();
@@ -40,6 +35,11 @@ app.prepare().then(() => {
   server.use(bodyParser());
 
   router.use(cookie());
+
+  // Express middleware that validates Firebase ID Tokens passed in the Authorization HTTP header.
+  // The Firebase ID token needs to be passed as a Bearer token in the Authorization HTTP header like this:
+  // `Authorization: Bearer <Firebase ID Token>`.
+  // when decoded successfully, the ID Token content will be added as `req.user`.
   router.use(async (ctx, next) => {
     const { req, request, cookies, res, params, query } = ctx;
 
@@ -88,7 +88,7 @@ app.prepare().then(() => {
     try {
       const decodedIdToken = await admin.auth().verifyIdToken(idToken);
 
-      console.log("ID Token correctly decoded", decodedIdToken);
+      console.log("ID Token correctly decoded, userid: ", idToken.user_id);
       ctx.user = decodedIdToken;
     } catch (error) {
       console.error("Error while verifying Firebase ID token");
@@ -101,13 +101,38 @@ app.prepare().then(() => {
 
   // Create token for user
   router.post("/api/token/", async ctx => {
-    const { req, res } = ctx;
-    console.log("create token", ctx.user, req.user);
+    const { req, res, user } = ctx;
+
+    if (!user) {
+      ctx.res.statusCode = 403;
+      return;
+    }
+
+    const tokensDoc = firestore.doc("/users/write-tokens");
+    const tokens = await tokensDoc.get();
+    console.log(tokens.length);
+    if (tokens.length) return;
+    const token = uuidv4();
+    const resp = await tokensDoc.set({
+      user: user.uid,
+      token
+    });
+    ctx.res.statusCode = 200;
+    ctx.body = {
+      token
+    };
+
+    console.log("created token", token, user.name);
   });
 
   router.get("/api/token/", async ctx => {
     const { req, res, user } = ctx;
-    console.log("user", user);
+
+    const tokensDoc = firestore.doc("/users/write-tokens");
+    const token = await tokensDoc.get();
+    ctx.body = {
+      token: (token.exists && token.data().token) || null
+    };
   });
 
   router.post("/api/:token/upload", async ctx => {

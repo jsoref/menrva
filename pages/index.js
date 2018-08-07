@@ -30,6 +30,16 @@ class Index extends React.Component {
       this.setState({
         user: firebase.apps?.length && firebase.auth().currentUser
       });
+
+      firebase.auth().onAuthStateChanged(user => {
+        if (user) {
+          console.log("auth state changed", user);
+          this.setState({ user });
+          // User is signed in.
+        } else {
+          // No user is signed in.
+        }
+      });
     }
   }
 

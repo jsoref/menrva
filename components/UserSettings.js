@@ -11,27 +11,32 @@ export default class UserSettings extends React.Component {
   async componentDidMount() {
     console.log("did mount");
     const idToken = await firebase.auth().currentUser?.getIdToken();
-    console.log("id token", idToken);
-    const token = await axios.get("/api/token/", {
+    const resp = await axios.get("/api/token/", {
       headers: {
         Authorization: `Bearer ${idToken}`
       }
     });
-    // this.setState({ token });
+    this.setState({ token: resp?.data?.token });
   }
 
   handleGetToken = async () => {
     console.log("get token");
     const idToken = await firebase.auth().currentUser?.getIdToken();
-    const token = await axios.post("/api/token/", {
-      headers: {
-        Authorization: `Bearer ${idToken}`
+    const resp = await axios.post(
+      "/api/token/",
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${idToken}`
+        }
       }
-    });
-    // this.setState({ token });
+    );
+
+    this.setState({ token: resp?.token });
   };
   render() {
     let { token } = this.state;
+    console.log("render", this.state.token);
     return (
       <div>
         {!token && <button onClick={this.handleGetToken}>Get Token</button>}
