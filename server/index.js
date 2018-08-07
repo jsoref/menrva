@@ -5,23 +5,13 @@ const bodyParser = require("koa-body");
 const Router = require("koa-router");
 const cookie = require("koa-cookie");
 const admin = require("firebase-admin");
-const serviceAccount = require("../sercy-2de63-d059ec2664ae.json");
+const serviceAccount = require("../serviceAccount.json");
 
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
   });
 }
-
-// var config = {
-// apiKey: "AIzaSyDaSF8PfdRA1mjztmQQKWV0v6BusUjvko4",
-// authDomain: "sercy-2de63.firebaseapp.com",
-// databaseURL: "https://sercy-2de63.firebaseio.com",
-// projectId: "sercy-2de63",
-// storageBucket: "sercy-2de63.appspot.com",
-// messagingSenderId: "724512766832"
-// };
-// firebase.initializeApp(config);
 
 const app = next({
   dir: path.resolve(__dirname, "../"),
