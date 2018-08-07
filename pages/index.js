@@ -1,6 +1,7 @@
 import React from "react";
 import firebase from "firebase";
 import UserSettings from "../components/UserSettings";
+import Upload from "../components/Upload";
 
 class Index extends React.Component {
   constructor(props) {
@@ -66,6 +67,7 @@ class Index extends React.Component {
       <div>
         <h1>Sercy</h1>
 
+        <Upload />
         <div>
           {user && <div>You're logged in as {user.displayName}</div>}
           {!user && (
