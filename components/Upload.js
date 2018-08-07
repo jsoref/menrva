@@ -25,9 +25,8 @@ export default class Upload extends React.Component {
   };
 
   render() {
-    let { token } = this.state;
     return (
-      <form onSubmit={this.handleUpload}>
+      <form onSubmit={this.handleUploadImage}>
         <input
           ref={ref => {
             this.uploadInput = ref;
