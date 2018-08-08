@@ -43,7 +43,7 @@ app.prepare().then(() => {
   // `Authorization: Bearer <Firebase ID Token>`.
   // when decoded successfully, the ID Token content will be added as `req.user`.
   router.use(async (ctx, next) => {
-    const { req, request, cookies, res, params, query } = ctx;
+    const { req, request, cookie, res, params, query } = ctx;
 
     if (!request.path.startsWith("/api/")) {
       await next();
@@ -55,13 +55,13 @@ app.prepare().then(() => {
     if (
       (!req.headers.authorization ||
         !req.headers.authorization.startsWith("Bearer ")) &&
-      !(cookies && cookies.__session)
+      !(cookie && cookie.session)
     ) {
       console.error(
         "No Firebase ID token was passed as a Bearer token in the Authorization header.",
         "Make sure you authorize your request by providing the following HTTP header:",
         "Authorization: Bearer <Firebase ID Token>",
-        'or by passing a "__session" cookie.'
+        'or by passing a "session" cookie.'
       );
       // ctx.res.statusCode = 403;
       // ctx.res.body = "Unauthorized";
@@ -76,10 +76,10 @@ app.prepare().then(() => {
       console.log('Found "Authorization" header');
       // Read the ID Token from the Authorization header.
       idToken = req.headers.authorization.split("Bearer ")[1];
-    } else if (cookies && cookies.__session) {
-      console.log('Found "__session" cookie', cookies.__session);
+    } else if (cookie && cookie.session) {
+      console.log('Found "session" cookie', cookie.session);
       // Read the ID Token from cookie.
-      idToken = cookies.__session;
+      idToken = cookie.session;
     } else {
       // No cookie
       // ctx.res.statusCode = 403;
@@ -90,7 +90,7 @@ app.prepare().then(() => {
     try {
       const decodedIdToken = await admin.auth().verifyIdToken(idToken);
 
-      console.log("ID Token correctly decoded, userid: ", idToken.user_id);
+      console.log("ID Token correctly decoded, userid: ", decodedIdToken);
       ctx.user = decodedIdToken;
     } catch (error) {
       console.error("Error while verifying Firebase ID token");
