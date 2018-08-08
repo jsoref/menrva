@@ -1,5 +1,7 @@
 import React from "react";
 import firebase from "firebase";
+
+import api from "../util/api";
 import UserSettings from "../components/UserSettings";
 import Upload from "../components/Upload";
 
@@ -8,7 +10,7 @@ class Index extends React.Component {
     super(props);
 
     this.state = {
-      user: null
+      user: null,
     };
   }
 
@@ -19,7 +21,7 @@ class Index extends React.Component {
       databaseURL: "https://sercy-2de63.firebaseio.com",
       projectId: "sercy-2de63",
       storageBucket: "sercy-2de63.appspot.com",
-      messagingSenderId: "724512766832"
+      messagingSenderId: "724512766832",
     };
 
     if (!firebase.apps?.length) {
@@ -28,7 +30,7 @@ class Index extends React.Component {
 
     if (!this.state.user) {
       this.setState({
-        user: firebase.apps?.length && firebase.auth().currentUser
+        user: firebase.apps?.length && firebase.auth().currentUser,
       });
 
       firebase.auth().onAuthStateChanged(user => {
@@ -44,18 +46,25 @@ class Index extends React.Component {
   }
 
   handleLogin = async () => {
-    console.log("handle login");
     const provider = new firebase.auth.GithubAuthProvider();
     try {
       const result = await firebase.auth().signInWithPopup(provider);
       // This gives you a GitHub Access Token. You can use it to access the GitHub API.
-      var token = result.credential.accessToken;
+      const githubToken = result.credential.accessToken;
       // The signed-in user info.
-      var user = result.user;
-      console.log("github token", token, user);
+      const user = result.user;
       this.setState({
-        user
+        user,
       });
+
+      api.post(
+        "/api/user",
+        {
+          githubToken,
+          userInfo: result.additionalUserInfo,
+        },
+        { token: user.qa }
+      );
 
       document.cookie = "__session=" + user.qa + ";max-age=3600";
     } catch (error) {
@@ -80,9 +89,7 @@ class Index extends React.Component {
         <Upload />
         <div>
           {user && <div>You're logged in as {user.displayName}</div>}
-          {!user && (
-            <button onClick={this.handleLogin}>Login with github</button>
-          )}
+          <button onClick={this.handleLogin}>Login with github</button>
 
           {user && <UserSettings />}
         </div>
