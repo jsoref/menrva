@@ -2,15 +2,16 @@ module.exports = {
   env: {
     browser: true,
     node: true,
-    es6: true
+    jest: true,
+    es6: true,
   },
   extends: "eslint:recommended",
   parser: "babel-eslint",
   parserOptions: {
     sourceType: "module",
-    ecmaVersion: 2018
+    ecmaVersion: 2018,
   },
   rules: {
-    "no-console": ["off"]
-  }
+    "no-console": ["off"],
+  },
 };
