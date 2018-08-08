@@ -7,7 +7,9 @@ const Router = require("koa-router");
 const cookie = require("koa-cookie").default;
 const admin = require("firebase-admin");
 const uuidv4 = require("uuid/v4");
+const Storage = require('@google-cloud/storage');
 
+const storage = new Storage();
 const credential = admin.credential.cert({
   projectId: "sercy-2de63",
   clientEmail: "sercy-server-app@sercy-2de63.iam.gserviceaccount.com",
@@ -16,8 +18,10 @@ const credential = admin.credential.cert({
 if (!admin.apps.length) {
   admin.initializeApp({
     credential,
+    storageBucket: "sercy-2de63.appspot.com"
   });
 }
+const bucket = admin.storage().bucket();
 
 const app = next({
   dir: path.resolve(__dirname, "../"),
@@ -26,7 +30,7 @@ const app = next({
 const defaultHandler = app.getRequestHandler();
 
 app.prepare().then(() => {
-  const server = new Koa();
+    const server = new Koa();
   const router = new Router();
 
   server.proxy = true;
@@ -46,7 +50,7 @@ app.prepare().then(() => {
     const { req, request, cookie, res, params, query } = ctx;
 
     if (!request.path.startsWith("/api/")) {
-      await next();
+        await next();
       return;
     }
 
@@ -67,7 +71,7 @@ app.prepare().then(() => {
       // ctx.res.body = "Unauthorized";
       // return;
     }
-
+    
     let idToken;
     if (
       req.headers.authorization &&
@@ -81,7 +85,7 @@ app.prepare().then(() => {
       // Read the ID Token from cookie.
       idToken = cookie.session;
     } else {
-      // No cookie
+        // No cookie
       // ctx.res.statusCode = 403;
       // ctx.res.body = "Unauthorized";
       // return;
@@ -93,8 +97,8 @@ app.prepare().then(() => {
       console.log("ID Token correctly decoded, userid: ", decodedIdToken);
       ctx.user = decodedIdToken;
     } catch (error) {
-      console.error("Error while verifying Firebase ID token");
-      // ctx.res.statusCode = 403;
+        console.error("Error while verifying Firebase ID token");
+        // ctx.res.statusCode = 403;
       // ctx.res.body = "Unauthorized";
     }
 
@@ -126,7 +130,7 @@ app.prepare().then(() => {
 
     console.log("created token", token, user.name);
   });
-
+  
   router.get("/api/token/", async ctx => {
     const { req, res, user } = ctx;
 
@@ -136,16 +140,24 @@ app.prepare().then(() => {
       token: (token.exists && token.data().token) || null,
     };
   });
-
+  
   router.post("/api/:token/upload", async ctx => {
     const { req, request, res, params, ip } = ctx;
     console.log(request.files);
-
+    bucket.upload(request.files.file.path, function(err, file, apiResponse) {
+  // Your bucket now contains:
+  // - "image.png" (with the contents of `/local/path/image.png')
+        console.log("File:", file);
+        console.log("Uploaded!");
+        console.log("error:", err);
+  // `file` is an instance of a File object that refers to your new file.
+    });
     ctx.body = {};
     ctx.respond = true;
-  });
+    });
 
-  router.get("*", async ctx => {
+
+router.get("*", async ctx => {
     const { req, res, params, query } = ctx;
     let { path } = ctx.request;
     const length = path.length;

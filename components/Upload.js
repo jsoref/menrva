@@ -20,8 +20,8 @@ export default class Upload extends React.Component {
       }
     });
 
-    const json = await response.json();
-    console.log(await response.json());
+    // const json = await response.json();
+    // console.log(await response.json());
   };
 
   render() {
