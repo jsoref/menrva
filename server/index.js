@@ -93,7 +93,7 @@ app.prepare().then(() => {
 
   // Create token for user
   router.post("/api/token", async ctx => {
-    const { req, res, user } = ctx;
+    const { user } = ctx;
 
     if (!user) {
       ctx.res.statusCode = 403;
@@ -117,7 +117,7 @@ app.prepare().then(() => {
   });
 
   router.get("/api/token", async ctx => {
-    const { req, res, user } = ctx;
+    const { user } = ctx;
 
     const tokensDoc = admin.firestore().doc(`/users/${user.user_id}`);
     const token = await tokensDoc.get();
@@ -126,16 +126,16 @@ app.prepare().then(() => {
     };
   });
 
-    //   API endpoint to get a list of builds
-    // take a router param repo 
-    // list from collection builds the repo 
+  //   API endpoint to get a list of builds
+  // take a router param repo
+  // list from collection builds the repo
   router.get("/api/build/:repo", async ctx => {
-    const { req, res, user, params } = ctx;
+    const { params } = ctx;
     console.log(params.repo);
-    const travisRef = admin.firestore().collection('builds');
-    const snapshot = await travisRef.get()
+    const travisRef = admin.firestore().collection("builds");
+    const snapshot = await travisRef.get();
 
-    ctx.body = snapshot.map(doc => doc.data())
+    ctx.body = snapshot.map(doc => doc.data());
   });
 
   // API endpoint to list an array of unique repo names
@@ -170,9 +170,11 @@ app.prepare().then(() => {
   });
 
   router.post("/build/upload", async ctx => {
-    const { request, params } = ctx;
+    const { request } = ctx;
     const { files, body, query } = request;
     const { token } = query;
+
+    console.log(files);
 
     // TODO check if token is valid
     const allFiles = await Promise.all(
@@ -216,16 +218,12 @@ app.prepare().then(() => {
   });
 
   router.post("/build/upload-finish", async ctx => {
-    const { request } = ctx;
-    const { query } = request;
-    const { token } = query;
     console.log("upload finished");
     // kick off image processing for build
+    ctx.respond = true;
   });
 
   router.post("/github/hooks", async ctx => {
-    const { request } = ctx;
-    const { body, path } = request;
     await githubHooksHandler(ctx);
     // ctx.body = {};
     ctx.respond = true;
@@ -244,7 +242,7 @@ app.prepare().then(() => {
 
   router.get("/github/setup", async ctx => {
     const { req, request, res } = ctx;
-    const { body, path, query } = request;
+    const { query } = request;
     console.log("github setup", query);
 
     if (query.setup_action === "install") {
