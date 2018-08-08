@@ -162,28 +162,53 @@ app.prepare().then(() => {
       });
   });
 
-  router.post("/build/:build/upload", async ctx => {
+  router.post("/build/upload", async ctx => {
     const { request, params } = ctx;
     const { files, body, query } = request;
     const { token } = query;
 
     // TODO check if token is valid
-    console.log(body, files, params.build);
     const allFiles = await Promise.all(
       (Array.isArray(files.file) ? files.file : [files.file]).map(file =>
         bucket.upload(file.path)
       )
     );
-    // Your bucket now contains:
-    // - "image.png" (with the contents of `/local/path/image.png')
-    // console.log("File:", file);
-    console.log("Uploaded!", allFiles.map(([{ name }]) => name));
-    // `file` is an instance of a File object that refers to your new file.
+    const uploadedFiles = allFiles.map(([{ name }, { mediaLink }]) => ({
+      name,
+      link: mediaLink,
+    }));
+
+    const firestore = admin.firestore();
+    const buildRef = firestore.doc(`/builds/${body.job}`);
+    const doc = await buildRef.get();
+
+    if (!doc.data()) {
+      await buildRef.set({
+        ...body,
+        token,
+        files: uploadedFiles,
+      });
+    } else {
+      await firestore.runTransaction(async t => {
+        const doc = await t.get(buildRef);
+        const data = doc.data() || {};
+        t.update(buildRef, {
+          files: [
+            ...(data.files || []),
+            ...allFiles.map(([{ name }, { mediaLink }]) => ({
+              name,
+              link: mediaLink,
+            })),
+          ],
+        });
+      });
+    }
+
     ctx.body = {};
     ctx.respond = true;
   });
 
-  router.post("/build/:build/upload-finish", async ctx => {
+  router.post("/build/upload-finish", async ctx => {
     const { request } = ctx;
     const { query } = request;
     const { token } = query;
