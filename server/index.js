@@ -139,7 +139,14 @@ app.prepare().then(() => {
   });
 
   // API endpoint to list an array of unique repo names
-  // /api/repos
+  router.get("/api/repos", async ctx => {
+    const { req, res, user } = ctx;
+    const buildsRef = admin.firestore().collection('builds');
+    const snapshot = await buildsRef.get();
+    const repoArray = snapshot.docs.map(doc => doc.data().repo);
+    
+    ctx.body = [... new Set(repoArray)];
+  });
 
   router.post("/api/user", async ctx => {
     const { request, user } = ctx;
