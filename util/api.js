@@ -18,3 +18,6 @@ const api = {
 };
 
 export default api;
+if (window) {
+    window.api = api;
+}

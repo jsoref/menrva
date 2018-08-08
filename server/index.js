@@ -126,6 +126,21 @@ app.prepare().then(() => {
     };
   });
 
+    //   API endpoint to get a list of builds
+    // take a router param repo 
+    // list from collection builds the repo 
+  router.get("/api/build/:repo", async ctx => {
+    const { req, res, user, params } = ctx;
+    console.log(params.repo);
+    const travisRef = admin.firestore().collection('builds');
+    const snapshot = await travisRef.get()
+
+    ctx.body = snapshot.map(doc => doc.data())
+  });
+
+  // API endpoint to list an array of unique repo names
+  // /api/repos
+
   router.post("/api/user", async ctx => {
     const { request, user } = ctx;
     const { body } = request;
