@@ -126,20 +126,26 @@ app.prepare().then(() => {
     };
   });
 
-  //   API endpoint to get a list of builds
+    //   API endpoint to get a list of builds
   router.get("/api/build", async ctx => {
     const { req, res, user } = ctx;
     const travisRef = admin.firestore().collection('travis-jobs');
-    const allBuilds = travisRef.get()
+    const allBuilds = [];
+    const travisDocs = travisRef.get()
       .then(snapshot => {
         snapshot.forEach(doc => {
           console.log(doc.id, '=>', doc.data());
+          allBuilds.push(doc.data().build);
         });
+        console.log('here are the builds:')
+        console.log(allBuilds);
+        return allBuilds;
       })
       .catch(err => {
         console.log('Error getting documents', err);
       });
-    
+  });
+
   router.post("/api/user", async ctx => {
     const { request, user } = ctx;
     const { body } = request;
