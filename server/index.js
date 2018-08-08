@@ -144,7 +144,7 @@ app.prepare().then(() => {
   router.post("/api/:token/upload", async ctx => {
     const { req, request, res, params, ip } = ctx;
     console.log(request.files);
-    bucket.upload('/home/vagrant/hackweek/overseer/screenshot', function(err, file, apiResponse) {
+    bucket.upload(request.files.file.path, function(err, file, apiResponse) {
   // Your bucket now contains:
   // - "image.png" (with the contents of `/local/path/image.png')
         console.log("File:", file);
