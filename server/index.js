@@ -1,5 +1,6 @@
-const Koa = require("koa");
 const path = require("path");
+
+const Koa = require("koa");
 const next = require("next");
 const bodyParser = require("koa-body");
 const Router = require("koa-router");
@@ -29,7 +30,11 @@ app.prepare().then(() => {
   const router = new Router();
 
   server.proxy = true;
-  server.use(bodyParser());
+  server.use(
+    bodyParser({
+      multipart: true,
+    })
+  );
 
   router.use(cookie());
 
@@ -133,19 +138,9 @@ app.prepare().then(() => {
   });
 
   router.post("/api/:token/upload", async ctx => {
-    console.log("upload");
-    const body = ctx.request.body;
-    const { req, res, params, ip } = ctx;
-    console.log("token", params.token);
-    // const result = await apis.comment(
-    // Object.assign(body, {
-    // ip: ip,
-    // id: params.id,
-    // ua: req.headers["user-agent"]
-    // }),
-    // res,
-    // req.method
-    // );
+    const { req, request, res, params, ip } = ctx;
+    console.log(request.files);
+
     ctx.body = {};
     ctx.respond = true;
   });
