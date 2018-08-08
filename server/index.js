@@ -36,7 +36,7 @@ app.prepare().then(() => {
   // `Authorization: Bearer <Firebase ID Token>`.
   // when decoded successfully, the ID Token content will be added as `req.user`.
   router.use(async (ctx, next) => {
-    const { req, request, cookie, res, params, query } = ctx;
+    const { req, request, cookie } = ctx;
 
     if (!request.path.startsWith("/api/")) {
       await next();
@@ -56,9 +56,8 @@ app.prepare().then(() => {
         "Authorization: Bearer <Firebase ID Token>",
         'or by passing a "session" cookie.'
       );
-      // ctx.res.statusCode = 403;
-      // ctx.res.body = "Unauthorized";
-      // return;
+      ctx.status = 403;
+      return;
     }
 
     let idToken;
@@ -75,9 +74,8 @@ app.prepare().then(() => {
       idToken = cookie.session;
     } else {
       // No cookie
-      // ctx.res.statusCode = 403;
-      // ctx.res.body = "Unauthorized";
-      // return;
+      ctx.status = 403;
+      return;
     }
 
     try {
@@ -86,17 +84,15 @@ app.prepare().then(() => {
       console.log("ID Token correctly decoded, userid: ", decodedIdToken);
       console.log(decodedIdToken.firebase.identities["github.com"][0]);
       ctx.user = decodedIdToken;
+      await next();
     } catch (error) {
       console.error("Error while verifying Firebase ID token", error);
-      // ctx.res.statusCode = 403;
-      // ctx.res.body = "Unauthorized";
+      ctx.status = 403;
     }
-
-    await next();
   });
 
   // Create token for user
-  router.post("/api/token/", async ctx => {
+  router.post("/api/token", async ctx => {
     const { req, res, user } = ctx;
 
     if (!user) {
@@ -104,13 +100,12 @@ app.prepare().then(() => {
       return;
     }
 
-    const tokensDoc = admin.firestore().doc("/users/write-tokens");
-    const tokens = await tokensDoc.get();
-    console.log(tokens.length);
+    const docRef = admin.firestore().doc(`/users/${user.user_id}`);
+    const userDoc = await docRef.get();
+    console.log(userDoc.length);
     const token = uuidv4();
-    const resp = await tokensDoc.set({
-      user: user.uid,
-      token,
+    const resp = await docRef.set({
+      writeToken: token,
     });
     console.log(resp);
     ctx.res.statusCode = 200;
@@ -121,40 +116,68 @@ app.prepare().then(() => {
     console.log("created token", token, user.name);
   });
 
-  router.get("/api/token/", async ctx => {
+  router.get("/api/token", async ctx => {
     const { req, res, user } = ctx;
 
-    const tokensDoc = admin.firestore().doc("/users/write-tokens");
+    const tokensDoc = admin.firestore().doc(`/users/${user.user_id}`);
     const token = await tokensDoc.get();
     ctx.body = {
-      token: (token.exists && token.data().token) || null,
+      token: (token.exists && token.data().writeToken) || null,
     };
   });
 
-  router.post("/api/build/:build/upload", async ctx => {
-    const { req, request, res, params, ip } = ctx;
-    console.log("upload", request.body, request.params, request.files);
-    bucket.upload(request.files.file.path, function(err, file, apiResponse) {
-      // Your bucket now contains:
-      // - "image.png" (with the contents of `/local/path/image.png')
-      // console.log("File:", file);
-      console.log("Uploaded!");
-      console.log("error:", err);
-      // `file` is an instance of a File object that refers to your new file.
-    });
+  router.post("/api/user", async ctx => {
+    const { request, user } = ctx;
+    const { body } = request;
+    console.log("create user", user);
+    if (!user) {
+      ctx.status = 403;
+      return;
+    }
+
+    admin
+      .firestore()
+      .doc(`/users/${user.user_id}`)
+      .set({
+        user_id: user.user_id,
+        githubToken: body.githubToken,
+        providerId: body.userInfo.providerId,
+        username: body.userInfo.username,
+        profile: body.userInfo.profile,
+      });
+  });
+
+  router.post("/build/:build/upload", async ctx => {
+    const { request, params } = ctx;
+    const { files, body, query } = request;
+    const { token } = query;
+
+    // TODO check if token is valid
+    console.log(body, files, params.build);
+    const allFiles = await Promise.all(
+      (Array.isArray(files.file) ? files.file : [files.file]).map(file =>
+        bucket.upload(file.path)
+      )
+    );
+    // Your bucket now contains:
+    // - "image.png" (with the contents of `/local/path/image.png')
+    // console.log("File:", file);
+    console.log("Uploaded!", allFiles.map(([{ name }]) => name));
+    // `file` is an instance of a File object that refers to your new file.
     ctx.body = {};
     ctx.respond = true;
   });
 
-  router.post("/api/build/:build/upload-finish", async ctx => {
+  router.post("/build/:build/upload-finish", async ctx => {
     const { request } = ctx;
     const { query } = request;
     const { token } = query;
+    console.log("upload finished");
     // kick off image processing for build
   });
 
   router.post("/github/hooks", async ctx => {
-    const { req, request, res, params, ip } = ctx;
+    const { request } = ctx;
     const { body, path } = request;
     await githubHooksHandler(ctx);
     // ctx.body = {};
@@ -163,7 +186,7 @@ app.prepare().then(() => {
 
   // debugging
   router.post("/github/*", async ctx => {
-    const { req, request, res, params, ip } = ctx;
+    const { request } = ctx;
     const { body, path } = request;
     console.log("github route hit", path, body);
 
@@ -173,7 +196,7 @@ app.prepare().then(() => {
   });
 
   router.get("/github/setup", async ctx => {
-    const { req, request, res, params, ip } = ctx;
+    const { req, request, res } = ctx;
     const { body, path, query } = request;
     console.log("github setup", query);
 
@@ -187,7 +210,7 @@ app.prepare().then(() => {
   });
 
   router.get("*", async ctx => {
-    const { req, res, params, query } = ctx;
+    const { req, res } = ctx;
     let { path } = ctx.request;
     const length = path.length;
 
