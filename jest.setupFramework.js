@@ -42,13 +42,9 @@ expect.extend({
       }
       console.log("uploading ", testName, slug);
       menrva.upload({
-        files: [
-          {
-            name: slug,
-            path: filePath,
-          },
-        ],
-        job: process.env.TRAVIS_JOB_ID,
+        filePath,
+        fileName: slug,
+        testName,
       });
     } catch (err) {
       console.error(err);
