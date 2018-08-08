@@ -5,7 +5,12 @@ module.exports = {
     jest: true,
     es6: true,
   },
-  extends: "eslint:recommended",
+  extends: [
+    "eslint:recommended",
+    "plugin:prettier/recommended",
+    "prettier",
+    // "prettier/react",
+  ],
   parser: "babel-eslint",
   parserOptions: {
     sourceType: "module",
