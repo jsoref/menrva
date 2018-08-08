@@ -84,7 +84,7 @@ class Index extends React.Component {
     let { user } = this.state;
     return (
       <div>
-        <h1>Sercy</h1>
+        <h1>Menrva</h1>
 
         <Upload />
         <div>
