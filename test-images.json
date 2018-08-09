@@ -1,0 +1,17 @@
+{
+  "should return true 1": [
+    "https://s3-us-west-1.amazonaws.com/chrissy-fun-bucket/ui-1-a.png",
+    "https://s3-us-west-1.amazonaws.com/chrissy-fun-bucket/ui-1-b.png"
+  ],
+  "should return true 2": [
+    "https://s3-us-west-1.amazonaws.com/chrissy-fun-bucket/ui-2-a.png",
+    "https://s3-us-west-1.amazonaws.com/chrissy-fun-bucket/ui-2-b.png"
+  ],
+  "should return true 3": [
+    "https://s3-us-west-1.amazonaws.com/chrissy-fun-bucket/ui-2-a.png"
+  ],
+  "should return false": [
+    "https://s3-us-west-1.amazonaws.com/chrissy-fun-bucket/ui-3-a.png",
+    "https://s3-us-west-1.amazonaws.com/chrissy-fun-bucket/ui-3-a.png"
+  ]
+}

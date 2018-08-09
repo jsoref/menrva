@@ -249,25 +249,12 @@ app.prepare().then(() => {
     ctx.respond = true;
   });
 
-  let testImages = {
-    "should return true 1": [
-      "https://s3-us-west-1.amazonaws.com/chrissy-fun-bucket/ui-1-a.png",
-      "https://s3-us-west-1.amazonaws.com/chrissy-fun-bucket/ui-1-b.png",
-    ],
-    "should return true 2": [
-      "https://s3-us-west-1.amazonaws.com/chrissy-fun-bucket/ui-2-a.png",
-      "https://s3-us-west-1.amazonaws.com/chrissy-fun-bucket/ui-2-b.png",
-    ],
-    "should return true 3": [
-      "https://s3-us-west-1.amazonaws.com/chrissy-fun-bucket/ui-2-a.png",
-    ],
-    "should return false": [
-      "https://s3-us-west-1.amazonaws.com/chrissy-fun-bucket/ui-3-a.png",
-      "https://s3-us-west-1.amazonaws.com/chrissy-fun-bucket/ui-3-a.png",
-    ],
-  };
+  router.post("/build/upload-finish", (ctx, next) => {
+    const { request } = ctx;
+    const { body } = request;
 
-  router.get("/build/upload-test", (ctx, next) => {
+    //kick off image processing for build
+
     const getImage = src =>
       fetch(src).then(
         res =>
@@ -287,20 +274,14 @@ app.prepare().then(() => {
         });
       });
 
-    const tests = Object.keys(testImages).map(key => {
-      return compareImages(...testImages[key]);
+    const tests = Object.keys(body).map(key => {
+      return compareImages(...body[key]);
     });
 
     Promise.all(tests).then(results => {
-      console.log(results);
+      console.log(results); //remove this and replace with db call
       next();
     });
-  });
-
-  router.post("/build/upload-finish", async ctx => {
-    console.log("upload finished");
-    // kick off image processing for build
-    ctx.respond = true;
   });
 
   router.post("/github/hooks", async ctx => {
