@@ -265,8 +265,6 @@ app.prepare().then(() => {
   };
 
   router.get("/build/upload-test", (ctx, next) => {
-    let { src1, src2 } = testImages["should return true 1"];
-
     const getImage = src =>
       fetch(src).then(
         res =>
@@ -277,9 +275,20 @@ app.prepare().then(() => {
           })
       );
 
-    Promise.all([getImage(src1), getImage(src2)]).then(response => {
-      let [image1, image2] = response;
-      console.log(!image1.equals(image2));
+    const compareImages = (src1, src2) =>
+      new Promise(resolve => {
+        Promise.all([getImage(src1), getImage(src2)]).then(response => {
+          let [image1, image2] = response;
+          return resolve(!image1.equals(image2));
+        });
+      });
+
+    const tests = Object.keys(testImages).map(key => {
+      return compareImages(testImages[key].src1, testImages[key].src2);
+    });
+
+    Promise.all(tests).then(results => {
+      console.log(results);
       next();
     });
   });
