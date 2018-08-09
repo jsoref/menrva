@@ -1,4 +1,5 @@
 const admin = require("../../admin");
+const runMenrvaCheck = require("../../runMenrvaCheck");
 
 module.exports = async function githubHooksHandler(ctx) {
   const { request } = ctx;
@@ -41,6 +42,7 @@ module.exports = async function githubHooksHandler(ctx) {
         ...payload,
         status: "pending",
       });
+      const result = await runMenrvaCheck(payload.check_suite);
       break;
     }
 
