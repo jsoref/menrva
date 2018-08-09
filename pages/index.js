@@ -1,101 +1,68 @@
 import React from "react";
-import firebase from "firebase";
+import styled from 'react-emotion'
+import BuildInfo from '../components/BuildInfo';
+import propTypes from 'prop-types';
 
-import api from "../util/api";
-import UserSettings from "../components/UserSettings";
-import Upload from "../components/Upload";
+import LoadingSpinner from '../components/LoadingSpinner';
+
+import theme from '../styles/theme';
+import {fadeIn} from '../styles/keyframes';
+import mock from "../mock-response";
 
 class Index extends React.Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      user: null,
-    };
-  }
-
-  componentDidMount() {
-    const config = {
-      apiKey: "AIzaSyDaSF8PfdRA1mjztmQQKWV0v6BusUjvko4",
-      authDomain: "sercy-2de63.firebaseapp.com",
-      databaseURL: "https://sercy-2de63.firebaseio.com",
-      projectId: "sercy-2de63",
-      storageBucket: "sercy-2de63.appspot.com",
-      messagingSenderId: "724512766832",
-    };
-
-    if (!firebase.apps?.length) {
-      firebase.initializeApp(config);
-    }
-
-    if (!this.state.user) {
-      this.setState({
-        user: firebase.apps?.length && firebase.auth().currentUser,
-      });
-
-      firebase.auth().onAuthStateChanged(user => {
-        if (user) {
-          console.log("auth state changed", user);
-          this.setState({ user });
-          // User is signed in.
-        } else {
-          // No user is signed in.
-        }
-      });
-    }
-  }
-
-  handleLogin = async () => {
-    const provider = new firebase.auth.GithubAuthProvider();
-    try {
-      const result = await firebase.auth().signInWithPopup(provider);
-      // This gives you a GitHub Access Token. You can use it to access the GitHub API.
-      const githubToken = result.credential.accessToken;
-      // The signed-in user info.
-      const user = result.user;
-      this.setState({
-        user,
-      });
-
-      api.post(
-        "/api/user",
-        {
-          githubToken,
-          userInfo: result.additionalUserInfo,
-        },
-        { token: user.qa }
-      );
-
-      document.cookie = "__session=" + user.qa + ";max-age=3600";
-    } catch (error) {
-      console.log(error);
-      // Handle Errors here.
-      var errorCode = error.code;
-      var errorMessage = error.message;
-      // The email of the user's account used.
-      var email = error.email;
-      // The firebase.auth.AuthCredential type that was used.
-      var credential = error.credential;
-      // ...
-    }
-  };
-
   render() {
-    let { user } = this.state;
+    let { builds } = mock;
+
+    if (!builds) return (<StyledLoadingSpinner />);
+
     return (
       <div>
-        <h1>Menrva</h1>
-
-        <Upload />
-        <div>
-          {user && <div>You're logged in as {user.displayName}</div>}
-          <button onClick={this.handleLogin}>Login with github</button>
-
-          {user && <UserSettings />}
-        </div>
+        <BuildsHeader>
+          <Label style={{textAlign: "right"}}>Build</Label>
+          <Label>Pull Request</Label>
+          <Label style={{textAlign: "center"}}>Snapshots</Label>
+          <Label style={{textAlign: "center"}}>Status</Label>
+        </BuildsHeader>
+        {builds.map((build, i) => (
+          <div key={i}>
+            <StyledBuildInfo {...build} showMeta={true} interactive={true}/>
+          </div>
+        ))}
       </div>
-    );
+    )
   }
 }
+
+let StyledBuildInfo = styled(BuildInfo)`
+  padding: 2em 5em 2em 3em;
+`;
+
+let StyledLoadingSpinner = styled(LoadingSpinner)`
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 100px;
+  height: 100px;
+  opacity: 0;
+  animation: 2s forwards ${fadeIn};
+`;
+
+let BuildsHeader = styled('div')`
+  display: grid;
+  grid-template-columns: ${theme.buildColumnLayout};
+  grid-column-gap: 3em;
+  padding: 1.5em 5em 1.5em 3em;
+  align-items: center;
+  border-bottom: 1px solid ${theme.gray3};
+  background: ${theme.gray1};
+  user-select: none;
+`;
+
+let Label = styled('div')`
+  color: ${theme.gray6};
+  font-size: 0.75em;
+  text-transform: uppercase;
+`;
 
 export default Index;

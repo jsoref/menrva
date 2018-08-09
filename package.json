@@ -16,6 +16,8 @@
   "license": "ISC",
   "dependencies": {
     "axios": "^0.18.0",
+    "emotion": "^9.2.6",
+    "emotion-server": "^9.2.6",
     "firebase": "^5.3.1",
     "firebase-admin": "^5.13.1",
     "firebase-tools": "^4.0.3",
@@ -24,8 +26,12 @@
     "koa-cookie": "^1.0.0",
     "koa-router": "^7.4.0",
     "next": "^6.1.1",
+    "pixelmatch": "^4.0.2",
+    "prop-types": "^15.6.2",
     "react": "^16.4.2",
     "react-dom": "^16.4.2",
+    "react-emotion": "^9.2.6",
+    "react-router-dom": "^4.3.1",
     "uuid": "^3.3.2"
   },
   "devDependencies": {
