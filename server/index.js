@@ -167,7 +167,11 @@ app.prepare().then(() => {
         const githubRef = await admin
           .firestore()
           .collection("github-jobs")
-          .where("check_suite.head_sha", "==", travisData.pr_sha)
+          .where(
+            "check_suite.head_sha",
+            "==",
+            travisData.pr_sha || travisData.commit
+          )
           .get();
         const githubDoc = githubRef.size && githubRef.docs[0].data();
 
@@ -202,7 +206,11 @@ app.prepare().then(() => {
     const githubRef = await admin
       .firestore()
       .collection("github-jobs")
-      .where("check_suite.head_sha", "==", travisData.commit)
+      .where(
+        "check_suite.head_sha",
+        "==",
+        travisData.pr_sha || travisData.commit
+      )
       .get();
     const githubDoc = githubRef.size && githubRef.docs[0].data();
 
