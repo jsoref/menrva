@@ -6,10 +6,12 @@
   "scripts": {
     "lint": "eslint ./",
     "precommit": "lint-staged",
-    "build": "next build",
     "test": "NODE_ENV=test yarn jest",
-    "start": "NODE_ENV=production node server",
-    "dev": "NODE_ENV=development yarn nodemon server"
+    "dev": "NODE_ENV=development yarn nodemon ./server --exec babel-node --presets @babel/preset-env",
+    "build": "yarn build:next && yarn build:server",
+    "build:next": "next build",
+    "build:server": "NODE_ENV=production yarn babel server --out-dir .next/dist",
+    "start": "NODE_ENV=production node .next/dist/server"
   },
   "keywords": [],
   "author": "",
@@ -36,8 +38,11 @@
     "uuid": "^3.3.2"
   },
   "devDependencies": {
+    "@babel/cli": "^7.0.0-rc.0",
     "@babel/core": "^7.0.0-beta.56",
+    "@babel/node": "^7.0.0-rc.0",
     "@babel/plugin-proposal-optional-chaining": "^7.0.0-beta.56",
+    "@babel/preset-env": "^7.0.0-rc.0",
     "@sindresorhus/slugify": "^0.3.0",
     "babel-core": "7.0.0-bridge.0",
     "babel-eslint": "^8.2.6",

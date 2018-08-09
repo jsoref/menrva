@@ -1,13 +1,21 @@
 {
-  "plugins": [
-    "@babel/plugin-proposal-optional-chaining"
-  ],
+  "plugins": ["@babel/plugin-proposal-optional-chaining"],
   "env": {
     "development": {
       "presets": ["next/babel"]
     },
     "production": {
-      "presets": ["next/babel"]
+      "presets": [
+        "next/babel",
+        [
+          "@babel/env",
+          {
+            "targets": {
+              "node": "8"
+            }
+          }
+        ]
+      ]
     },
     "test": {
       "presets": [["next/babel", { "preset-env": { "modules": "commonjs" } }]]
