@@ -243,7 +243,7 @@ app.prepare().then(() => {
     const { request } = ctx;
     const { files, body, query } = request;
     const { token } = query;
-    const { testName, fileName, ...restBody } = body;
+    const { testName, ...restBody } = body;
 
     // TODO check if token is valid
     const allFiles = await Promise.all(
@@ -258,10 +258,9 @@ app.prepare().then(() => {
         });
       })
     );
-    const uploadedFiles = allFiles.map(([{ name }, { mediaLink }]) => ({
-      name,
-      link: mediaLink,
-      fileName,
+    console.log(allFiles);
+    const uploadedFiles = allFiles.map(([{ name }]) => ({
+      link: `https://storage.googleapis.com/sercy-2de63.appspot.com/${name}`,
       testName,
     }));
 
