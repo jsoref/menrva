@@ -16,7 +16,7 @@ class BuildInfo extends Component {
   };
 
   time(time) {
-    return new Date(time * 1000).toLocaleTimeString("en-US", {
+    return new Date(time).toLocaleTimeString("en-US", {
       hour12: false,
     });
   }
