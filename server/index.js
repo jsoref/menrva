@@ -6,7 +6,6 @@ const bodyParser = require("koa-body");
 const Router = require("koa-router");
 const cookie = require("koa-cookie").default;
 const uuidv4 = require("uuid/v4");
-const slugify = require("@sindresorhus/slugify");
 
 const admin = require("./admin");
 const githubHooksHandler = require("./hooks/github");
@@ -81,9 +80,6 @@ app.prepare().then(() => {
 
     try {
       const decodedIdToken = await admin.auth().verifyIdToken(idToken);
-
-      console.log("ID Token correctly decoded, userid: ", decodedIdToken);
-      console.log(decodedIdToken.firebase.identities["github.com"][0]);
       ctx.user = decodedIdToken;
       await next();
     } catch (error) {
@@ -102,13 +98,10 @@ app.prepare().then(() => {
     }
 
     const docRef = admin.firestore().doc(`/users/${user.user_id}`);
-    const userDoc = await docRef.get();
-    console.log(userDoc.length);
     const token = uuidv4();
-    const resp = await docRef.set({
+    await docRef.set({
       writeToken: token,
     });
-    console.log(resp);
     ctx.res.statusCode = 200;
     ctx.body = {
       token,
@@ -127,25 +120,11 @@ app.prepare().then(() => {
     };
   });
 
-  // API endpoint to get a list of builds
-  // take a router param repo
-  // list from collection builds that match repo passed as param
-  router.get("/api/build/:repo", async ctx => {
-    const { req, res, user, params } = ctx;
-    const travisRef = admin
-      .firestore()
-      .collection("builds")
-      .where("repo", "==", params.repo);
-    const snapshot = await travisRef.get();
-    console.log(snapshot.docs.map(doc => doc.data()));
-  });
-
   // API endpoint to list an array of unique repo names
   router.get("/api/repos", async ctx => {
     const buildsRef = admin.firestore().collection("builds");
     const snapshot = await buildsRef.get();
     const repoArray = snapshot.docs.map(doc => doc.data().repo);
-
     ctx.body = [...new Set(repoArray)];
   });
 
@@ -170,22 +149,112 @@ app.prepare().then(() => {
       });
   });
 
+  // API endpoint to get a list of builds
+  // take a router param repo
+  // list from collection builds that match repo passed as param
+  router.get("/api/builds/:owner/:repo", async ctx => {
+    const { params } = ctx;
+    const travisRef = admin
+      .firestore()
+      .collection("builds")
+      .where("repo", "==", `${params.owner}/${params.repo}`)
+      .orderBy("started_at", "desc");
+    const snapshot = await travisRef.get();
+
+    ctx.body = await Promise.all(
+      snapshot.docs.map(async doc => {
+        const travisData = doc.data();
+        const githubRef = await admin
+          .firestore()
+          .collection("github-jobs")
+          .where("check_suite.head_sha", "==", travisData.pr_sha)
+          .get();
+        const githubDoc = githubRef.size && githubRef.docs[0].data();
+
+        let githubData = {};
+        let { check_suite } = githubDoc || {};
+        if (check_suite) {
+          let { head_commit } = check_suite;
+          githubData = {
+            head_commit,
+          };
+        }
+        return {
+          ...travisData,
+          ...githubData,
+        };
+      })
+    );
+  });
+
+  // API endpoint to get a list of builds
+  // take a router param repo
+  // list from collection builds the repo
+  router.get("/api/build/:owner/:repo/:build", async ctx => {
+    const { params } = ctx;
+    const travisRef = await admin
+      .firestore()
+      .collection("builds")
+      .where("repo", "==", `${params.owner}/${params.repo}`)
+      .where("build", "==", params.build);
+    const travisDoc = await travisRef.get();
+    const travisData = travisDoc.size && travisDoc.docs[0].data();
+    const githubRef = await admin
+      .firestore()
+      .collection("github-jobs")
+      .where("check_suite.head_sha", "==", travisData.commit)
+      .get();
+    const githubDoc = githubRef.size && githubRef.docs[0].data();
+
+    let githubData = {};
+    let { sender, check_suite } = githubDoc || {};
+    let parentDoc = {};
+    if (check_suite) {
+      let { head_commit, before } = check_suite;
+      githubData = {
+        head_commit,
+        sender,
+      };
+
+      const parentRef = await admin
+        .firestore()
+        .collection("builds")
+        .where("commit", "==", before)
+        .get();
+      parentDoc = (parentRef.size && parentRef.docs[0].data()) || {};
+    }
+
+    ctx.body = {
+      ...travisData,
+      ...githubData,
+      parent: parentDoc,
+    };
+  });
+
   router.post("/build/upload", async ctx => {
     const { request } = ctx;
     const { files, body, query } = request;
     const { token } = query;
-
-    console.log(files);
+    const { testName, fileName, ...restBody } = body;
 
     // TODO check if token is valid
     const allFiles = await Promise.all(
-      (Array.isArray(files.file) ? files.file : [files.file]).map(file =>
-        bucket.upload(file.path)
-      )
+      (Array.isArray(files.file) ? files.file : [files.file]).map(file => {
+        const fileParts = file.path.split("/");
+        return bucket.upload(file.path, {
+          destination: `${fileParts[fileParts.length - 1]}.png`,
+          metadata: {
+            contentType: "image/png",
+          },
+          public: true,
+        });
+      })
     );
     const uploadedFiles = allFiles.map(([{ name }, { mediaLink }]) => ({
       name,
       link: mediaLink,
+      fileName,
+      testName,
     }));
 
     const firestore = admin.firestore();
@@ -194,11 +263,11 @@ app.prepare().then(() => {
 
     if (!doc.data()) {
       await buildRef.set({
-        ...body,
+        ...restBody,
         status: "pending",
-        repo_slug: slugify(body.repo),
         token,
         files: uploadedFiles,
+        started_at: new Date().getTime(),
       });
     } else {
       await firestore.runTransaction(async t => {
@@ -212,6 +281,7 @@ app.prepare().then(() => {
               link: mediaLink,
             })),
           ],
+          last_updated_at: new Date().getTime(),
         });
       });
     }

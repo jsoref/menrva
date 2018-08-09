@@ -1,17 +1,18 @@
-import App, {Container} from 'next/app';
-import React from 'react';
-import styled, { hydrate, keyframes, css, injectGlobal } from 'react-emotion';
+import App, { Container } from "next/app";
+import React from "react";
+import styled, { hydrate, keyframes, css, injectGlobal } from "react-emotion";
 import firebase from "firebase";
 
 import reset from "../styles/reset";
-import theme from '../styles/theme';
-import Link from 'next/link';
+import theme from "../styles/theme";
+import Link from "next/link";
 import api from "../util/api";
+import initFirebase from "../util/initFirebase";
 
 // Adds server generated styles to emotion cache.
 // '__NEXT_DATA__.ids' is set in '_document.js'
-if (typeof window !== 'undefined') {
-  hydrate(window.__NEXT_DATA__.ids)
+if (typeof window !== "undefined") {
+  hydrate(window.__NEXT_DATA__.ids);
 }
 
 injectGlobal`
@@ -19,14 +20,14 @@ injectGlobal`
 `;
 
 export default class MyApp extends App {
-  static async getInitialProps ({ Component, router, ctx }) {
-    let pageProps = {}
+  static async getInitialProps({ Component, router, ctx }) {
+    let pageProps = {};
 
     if (Component.getInitialProps) {
-      pageProps = await Component.getInitialProps(ctx)
+      pageProps = await Component.getInitialProps(ctx);
     }
 
-    return {pageProps}
+    return { pageProps };
   }
 
   constructor(props) {
@@ -37,20 +38,14 @@ export default class MyApp extends App {
     };
   }
 
+  componentDidCatch() {
+    console.error("component did catch");
+    // TODO: Add Sentry
+  }
+
   componentDidMount() {
-    const config = {
-      apiKey: "AIzaSyDaSF8PfdRA1mjztmQQKWV0v6BusUjvko4",
-      authDomain: "sercy-2de63.firebaseapp.com",
-      databaseURL: "https://sercy-2de63.firebaseio.com",
-      projectId: "sercy-2de63",
-      storageBucket: "sercy-2de63.appspot.com",
-      messagingSenderId: "724512766832",
-    };
-
-    if (!firebase.apps?.length) {
-      firebase.initializeApp(config);
-    }
-
+    console.log("app cdm");
+    initFirebase();
     if (!this.state.user) {
       this.setState({
         user: firebase.apps?.length && firebase.auth().currentUser,
@@ -103,8 +98,8 @@ export default class MyApp extends App {
     }
   };
 
-  render () {
-    const {Component, pageProps} = this.props;
+  render() {
+    const { Component, pageProps } = this.props;
     let { user } = this.state;
 
     return (
@@ -112,30 +107,37 @@ export default class MyApp extends App {
         <SiteBody>
           <SiteHeader>
             <Link href="/">
-              <HomeLink>MENRV<span style={{marginLeft: "-2px"}}>A</span></HomeLink>
+              <HomeLink>
+                MENRV
+                <span style={{ marginLeft: "-2px" }}>A</span>
+              </HomeLink>
             </Link>
             <UserInfo>
-              {user ? <div>{user.displayName}</div> : <div onClick={this.handleLogin}>Login</div>}
+              {user ? (
+                <div>{user.displayName}</div>
+              ) : (
+                <div onClick={this.handleLogin}>Login</div>
+              )}
             </UserInfo>
           </SiteHeader>
-          <Component {...pageProps} />
+          {user && <Component {...pageProps} />}
         </SiteBody>
       </Container>
-    )
+    );
   }
 }
 
-const SiteHeader = styled('div')`
+const SiteHeader = styled("div")`
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 3em;
   width: 100%;
   border-bottom: 1px solid ${theme.gray5};
-  background: ${theme.gray8}
+  background: ${theme.gray8};
 `;
 
-const HomeLink = styled('div')`
+const HomeLink = styled("div")`
   display: block;
   text-align: center;
   font-weight: bold;
@@ -145,16 +147,18 @@ const HomeLink = styled('div')`
   font-size: 1.2em;
   cursor: pointer;
 
-  &:hover { color: ${theme.activeColor}; }
+  &:hover {
+    color: ${theme.activeColor};
+  }
 `;
 
-const UserInfo = styled('div')`
+const UserInfo = styled("div")`
   color: ${theme.gray1};
   text-transform: uppercase;
   font-size: 0.8em;
   cursor: pointer;
 `;
 
-const SiteBody = styled('div')`
+const SiteBody = styled("div")`
   font-family: ${theme.fontFamily};
 `;

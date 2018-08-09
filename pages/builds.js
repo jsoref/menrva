@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "react-emotion";
-import Link from "next/link";
+import { withRouter } from "next/router";
+import BuildInfo from "../components/BuildInfo";
 
 import LoadingSpinner from "../components/LoadingSpinner";
 
@@ -8,36 +9,47 @@ import theme from "../styles/theme";
 import { fadeIn } from "../styles/keyframes";
 import api from "../util/api";
 
-class Index extends React.Component {
+class Builds extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { repos: null };
+    this.state = {
+      builds: null,
+    };
   }
 
   async componentDidMount() {
-    const repos = await api.get("/api/repos");
-    this.setState({ repos });
+    const { router } = this.props;
+    const builds = await api.get(`/api/builds/${router.query.repo}`);
+
+    this.setState({ builds });
   }
 
   render() {
-    let { repos } = this.state;
+    let { builds } = this.state;
 
-    if (!repos) return <StyledLoadingSpinner />;
+    if (!builds) return <StyledLoadingSpinner />;
 
     return (
       <div>
         <BuildsHeader>
-          <Label>Repository</Label>
+          <Label style={{ textAlign: "right" }}>Build</Label>
+          <Label>Pull Request</Label>
+          <Label style={{ textAlign: "center" }}>Snapshots</Label>
+          <Label style={{ textAlign: "center" }}>Status</Label>
         </BuildsHeader>
-        {repos.map((repo, i) => (
+        {builds.map((build, i) => (
           <div key={i}>
-            <Link href={{ pathname: "/builds", query: { repo } }}>{repo}</Link>
+            <StyledBuildInfo {...build} showMeta={true} interactive={true} />
           </div>
         ))}
       </div>
     );
   }
 }
+
+let StyledBuildInfo = styled(BuildInfo)`
+  padding: 2em 5em 2em 3em;
+`;
 
 let StyledLoadingSpinner = styled(LoadingSpinner)`
   position: absolute;
@@ -67,4 +79,4 @@ let Label = styled("div")`
   text-transform: uppercase;
 `;
 
-export default Index;
+export default withRouter(Builds);

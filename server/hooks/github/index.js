@@ -11,7 +11,7 @@ module.exports = async function githubHooksHandler(ctx) {
     // github app created
     case "created":
       await firestore
-        .doc(`/github-nstallations/${payload.installation.id}`)
+        .doc(`/github-installations/${payload.installation.id}`)
         .set(payload);
       break;
     // github app deleted/uninstalled

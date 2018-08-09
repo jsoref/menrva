@@ -1,67 +1,94 @@
-import React, { Component } from 'react';
-import styled from 'react-emotion';
-import Diff from './Diff';
-import propTypes from 'prop-types';
-import Link from 'next/link';
-import theme from '../styles/theme';
+import React, { Component } from "react";
+import styled from "react-emotion";
+import propTypes from "prop-types";
+import Link from "next/link";
+import theme from "../styles/theme";
 
 class BuildInfo extends Component {
   static propTypes = {
     id: propTypes.number,
-    commit: propTypes.object, //expound on this later
+    commit: propTypes.string, //expound on this later
     snapshots: propTypes.array,
     status: propTypes.string,
     interactive: propTypes.bool,
     showMeta: propTypes.bool,
     showApproveButton: propTypes.bool,
-  }
+  };
 
-  time() {
-    return new Date(this.props.commit.time * 1000).toLocaleTimeString('en-US', {hour12: false});
+  time(time) {
+    return new Date(time * 1000).toLocaleTimeString("en-US", {
+      hour12: false,
+    });
   }
 
   render() {
+    let {
+      branch,
+      build,
+      commit,
+      head_commit,
+      sender,
+      job,
+      repo,
+      repo_slug,
+      status,
+      files,
+      pr,
+      pr_branch,
+      pr_sha,
+      pr_slug,
+      started_at,
+      showMeta,
+      showApproveButton,
+    } = this.props;
+
+    const url = `https://github.com/${repo}/pull/${pr}`;
+
     return (
-      <Link href={{ pathname: '/build', query: { id: this.props.id } }}>
+      <Link href={{ pathname: "/build", query: { repo, build } }}>
         <Container {...this.props}>
           <BuildNumberAndTime>
-            <BuildNumber>{this.props.id}</BuildNumber>
-            <Time>{this.time()}</Time>
+            <BuildNumber>{build}</BuildNumber>
+            <Time>{this.time(started_at)}</Time>
           </BuildNumberAndTime>
           <CommitInfo>
             <PullRequestTitle>
-              {this.props.commit.pull.name}&nbsp;
-              <span style={{fontWeight: "normal"}}>by</span>&nbsp;
-              {this.props.commit.pull.author}
+              {pr_branch || branch}
+              &nbsp;
+              {head_commit?.message}
+              <span style={{ fontWeight: "normal" }}>by</span>
+              &nbsp;
+              {head_commit?.author?.name}
             </PullRequestTitle>
-            <CommitHash href={this.props.commit.url}>#{this.props.commit.hash}</CommitHash>
+            {pr && pr !== "false" ? (
+              <CommitHash href={url}>#{pr}</CommitHash>
+            ) : null}
+            <CommitHash>{head_commit?.sha?.slice(9)}</CommitHash>
           </CommitInfo>
-          <SnapshotsInfo>
-            {this.props.showMeta ? this.props.snapshots.length : ''}
-          </SnapshotsInfo>
+          <SnapshotsInfo>{showMeta ? files.length : ""}</SnapshotsInfo>
           <Status>
-            {this.props.showApproveButton ?
-              <ApproveButton status={this.props.status}>
-                {(this.props.status == 'approved') ? 'Approved' : 'Approve'}
-              </ApproveButton> :
-              <BuildStatus status={this.props.status}>
-                {this.props.status}
-              </BuildStatus>
-            }
+            {showApproveButton ? (
+              <ApproveButton status={status}>
+                {status == "approved" ? "Approved" : "Approve"}
+              </ApproveButton>
+            ) : (
+              <BuildStatus status={status}>{status}</BuildStatus>
+            )}
           </Status>
         </Container>
       </Link>
-    )
+    );
   }
 }
 
-let getColor = (status) => {
+let getColor = status => {
+  if (status == "pending") return theme.gray3;
   if (status == "passed") return theme.green;
   if (status == "failed") return theme.red;
   return theme.gray8;
-}
+};
 
-let Container = styled('div')`
+let Container = styled("div")`
   color: ${theme.gray7};
   text-decoration: none;
   padding: 2em 0 2em;
@@ -73,60 +100,60 @@ let Container = styled('div')`
   user-select: none;
 
   &:hover {
-    background: ${p => p.interactive ? theme.gray2 : 'inherit'};
-    cursor: ${p => p.interactive ? 'pointer' : 'inherit'};
+    background: ${p => (p.interactive ? theme.gray2 : "inherit")};
+    cursor: ${p => (p.interactive ? "pointer" : "inherit")};
   }
 `;
 
-let CommitInfo = styled('div')`
+let CommitInfo = styled("div")`
   display: flex;
   justify-content: space-between;
   flex-direction: column;
 `;
 
-let CommitHash = styled('span')`
+let CommitHash = styled("span")`
   color: ${theme.gray8};
 `;
 
-let PullRequestTitle = styled('span')`
+let PullRequestTitle = styled("span")`
   font-size: 1.2em;
   font-weight: bold;
   text-decoration: none;
   margin-bottom: 0.25em;
 `;
 
-let BuildNumberAndTime = styled('div')`
+let BuildNumberAndTime = styled("div")`
   display: flex;
   flex-direction: column;
   align-items: flex-end;
 `;
 
-let Time = styled('div')`
+let Time = styled("div")`
   font-size: 0.75em;
 `;
 
-let SnapshotsInfo = styled('div')`
+let SnapshotsInfo = styled("div")`
   font-size: 2em;
   font-weight: bold;
   text-align: center;
 `;
 
-let Status = styled('div')`
+let Status = styled("div")`
   display: flex;
   justify-content: center;
-`
+`;
 
-let BuildStatus = styled('div')`
+let BuildStatus = styled("div")`
   border-radius: 5em;
   padding: 1em 2em;
   font-size: 0.75em;
   background-color: ${p => getColor(p.status)};
   color: ${theme.gray2};
-`
+`;
 
-let BuildNumber = styled('h1')`
+let BuildNumber = styled("h1")`
   font-weight: bold;
-  font-size: 2.1em
+  font-size: 2.1em;
 `;
 
 let ApproveButton = styled(BuildStatus)`
@@ -135,6 +162,6 @@ let ApproveButton = styled(BuildStatus)`
   border: 2px solid #fff;
   padding: 1em 4em;
   box-shadow: rgba(0, 0, 0, 0.05) 1px 1px 5px 1px;
-`
+`;
 
 export default BuildInfo;

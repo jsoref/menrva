@@ -6474,9 +6474,9 @@ memory-fs@^0.4.0, memory-fs@~0.4.1:
     errno "^0.1.3"
     readable-stream "^2.0.1"
 
-menrva-client@1.0.22:
-  version "1.0.22"
-  resolved "https://registry.yarnpkg.com/menrva-client/-/menrva-client-1.0.22.tgz#ea754d19f271a554f928dc3fa2259d0dcd491bf8"
+menrva-client@1.0.23:
+  version "1.0.23"
+  resolved "https://registry.yarnpkg.com/menrva-client/-/menrva-client-1.0.23.tgz#952de896e22bd3359f3bfc2d93d51911222d9afc"
   dependencies:
     glob "^7.1.2"
     request "^2.87.0"
