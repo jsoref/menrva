@@ -37,7 +37,13 @@ class Diff extends Component {
     let canvas = this.canvas.current;
     let context = canvas.getContext("2d");
 
-    if (!this.image1 || !this.image2) return;
+    if (
+      !this.image1 ||
+      !this.image2 ||
+      !this.image1.current ||
+      !this.image2.current
+    )
+      return;
 
     let img1 = this.getImageData(this.image1.current);
     let img2 = this.getImageData(this.image2.current);
@@ -46,6 +52,7 @@ class Diff extends Component {
       this.image1.current.naturalWidth,
       this.image2.current.naturalWidth
     );
+
     let height = Math.max(
       this.image1.current.naturalHeight,
       this.image2.current.naturalHeight

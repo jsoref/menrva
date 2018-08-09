@@ -6,6 +6,8 @@ const bodyParser = require("koa-body");
 const Router = require("koa-router");
 const cookie = require("koa-cookie").default;
 const uuidv4 = require("uuid/v4");
+const PNG = require("pngjs").PNG;
+const fetch = require("node-fetch");
 
 const admin = require("./admin");
 const apiAuth = require("./middleware/apiAuth");
@@ -247,10 +249,39 @@ app.prepare().then(() => {
     ctx.respond = true;
   });
 
-  router.post("/build/upload-finish", async ctx => {
-    console.log("upload finished");
-    // kick off image processing for build
-    ctx.respond = true;
+  router.post("/build/upload-finish", (ctx, next) => {
+    const { request } = ctx;
+    const { body } = request;
+
+    //kick off image processing for build
+
+    const getImage = src =>
+      fetch(src).then(
+        res =>
+          new Promise(resolve => {
+            res.body.pipe(new PNG()).on("parsed", image => {
+              return resolve(image);
+            });
+          })
+      );
+
+    const compareImages = (src1, src2) =>
+      new Promise(resolve => {
+        if (!src2) return resolve(true);
+        Promise.all([getImage(src1), getImage(src2)]).then(response => {
+          let [image1, image2] = response;
+          return resolve(!image1.equals(image2));
+        });
+      });
+
+    const tests = Object.keys(body).map(key => {
+      return compareImages(...body[key]);
+    });
+
+    Promise.all(tests).then(results => {
+      console.log(results); //remove this and replace with db call
+      next();
+    });
   });
 
   router.post("/github/hooks", async ctx => {
