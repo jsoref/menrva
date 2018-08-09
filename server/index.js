@@ -283,9 +283,9 @@ app.prepare().then(() => {
         t.update(buildRef, {
           files: [
             ...(data.files || []),
-            ...allFiles.map(([{ name }, { mediaLink }]) => ({
-              name,
-              link: mediaLink,
+            ...allFiles.map(([{ name }]) => ({
+              link: `https://storage.googleapis.com/sercy-2de63.appspot.com/${name}`,
+              testName,
             })),
           ],
           last_updated_at: new Date().getTime(),
