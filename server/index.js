@@ -6,6 +6,7 @@ const bodyParser = require("koa-body");
 const Router = require("koa-router");
 const cookie = require("koa-cookie").default;
 const uuidv4 = require("uuid/v4");
+const slugify = require("@sindresorhus/slugify");
 
 const admin = require("./admin");
 const githubHooksHandler = require("./hooks/github");
@@ -126,7 +127,7 @@ app.prepare().then(() => {
     };
   });
 
-  //   API endpoint to get a list of builds
+  // API endpoint to get a list of builds
   // take a router param repo
   // list from collection builds that match repo passed as param
   router.get("/api/build/:repo", async ctx => {
@@ -141,7 +142,6 @@ app.prepare().then(() => {
 
   // API endpoint to list an array of unique repo names
   router.get("/api/repos", async ctx => {
-    const { req, res, user } = ctx;
     const buildsRef = admin.firestore().collection("builds");
     const snapshot = await buildsRef.get();
     const repoArray = snapshot.docs.map(doc => doc.data().repo);
@@ -195,6 +195,8 @@ app.prepare().then(() => {
     if (!doc.data()) {
       await buildRef.set({
         ...body,
+        status: "pending",
+        repo_slug: slugify(body.repo),
         token,
         files: uploadedFiles,
       });
