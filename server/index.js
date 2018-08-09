@@ -128,24 +128,25 @@ app.prepare().then(() => {
 
   //   API endpoint to get a list of builds
   // take a router param repo
-  // list from collection builds the repo
+  // list from collection builds that match repo passed as param
   router.get("/api/build/:repo", async ctx => {
-    const { params } = ctx;
-    console.log(params.repo);
-    const travisRef = admin.firestore().collection("builds");
+    const { req, res, user, params } = ctx;
+    const travisRef = admin
+      .firestore()
+      .collection("builds")
+      .where("repo", "==", params.repo);
     const snapshot = await travisRef.get();
-
-    ctx.body = snapshot.map(doc => doc.data());
+    console.log(snapshot.docs.map(doc => doc.data()));
   });
 
   // API endpoint to list an array of unique repo names
   router.get("/api/repos", async ctx => {
     const { req, res, user } = ctx;
-    const buildsRef = admin.firestore().collection('builds');
+    const buildsRef = admin.firestore().collection("builds");
     const snapshot = await buildsRef.get();
     const repoArray = snapshot.docs.map(doc => doc.data().repo);
-    
-    ctx.body = [... new Set(repoArray)];
+
+    ctx.body = [...new Set(repoArray)];
   });
 
   router.post("/api/user", async ctx => {
