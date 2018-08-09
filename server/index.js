@@ -43,12 +43,11 @@ app.prepare().then(() => {
       return;
     }
 
-    console.log("Check if request is authorized with Firebase ID token");
-    // console.log("cookies", cookies);
+    // console.log("cookies", cookie);
     if (
       (!req.headers.authorization ||
         !req.headers.authorization.startsWith("Bearer ")) &&
-      !(cookie && cookie.session)
+      !(cookie && cookie.__session)
     ) {
       console.error(
         "No Firebase ID token was passed as a Bearer token in the Authorization header.",
@@ -65,13 +64,12 @@ app.prepare().then(() => {
       req.headers.authorization &&
       req.headers.authorization.startsWith("Bearer ")
     ) {
-      console.log('Found "Authorization" header');
       // Read the ID Token from the Authorization header.
       idToken = req.headers.authorization.split("Bearer ")[1];
-    } else if (cookie && cookie.session) {
-      console.log('Found "session" cookie', cookie.session);
+    } else if (cookie && cookie.__session) {
+      console.log('Found "session" cookie', cookie.__session);
       // Read the ID Token from cookie.
-      idToken = cookie.session;
+      idToken = cookie.__session;
     } else {
       // No cookie
       ctx.status = 403;
