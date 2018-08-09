@@ -58,7 +58,7 @@ class Build extends Component {
         {Array.from(filesMap).map(([testName, link]) => (
           <div key={testName}>
             <BuildTitle>{testName}</BuildTitle>
-            <Diff src1={link} src2={parentFilesMap.get(testName)} />
+            <Diff src1={parentFilesMap.get(testName)} src2={link} />
           </div>
         ))}
       </div>
