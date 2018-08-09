@@ -250,18 +250,21 @@ app.prepare().then(() => {
   });
 
   let testImages = {
-    "should return true 1": {
-      src1: "https://s3-us-west-1.amazonaws.com/chrissy-fun-bucket/ui-1-a.png",
-      src2: "https://s3-us-west-1.amazonaws.com/chrissy-fun-bucket/ui-1-b.png",
-    },
-    "should return true 2": {
-      src1: "https://s3-us-west-1.amazonaws.com/chrissy-fun-bucket/ui-2-a.png",
-      src2: "https://s3-us-west-1.amazonaws.com/chrissy-fun-bucket/ui-2-b.png",
-    },
-    "should return false": {
-      src1: "https://s3-us-west-1.amazonaws.com/chrissy-fun-bucket/ui-3-a.png",
-      src2: "https://s3-us-west-1.amazonaws.com/chrissy-fun-bucket/ui-3-a.png",
-    },
+    "should return true 1": [
+      "https://s3-us-west-1.amazonaws.com/chrissy-fun-bucket/ui-1-a.png",
+      "https://s3-us-west-1.amazonaws.com/chrissy-fun-bucket/ui-1-b.png",
+    ],
+    "should return true 2": [
+      "https://s3-us-west-1.amazonaws.com/chrissy-fun-bucket/ui-2-a.png",
+      "https://s3-us-west-1.amazonaws.com/chrissy-fun-bucket/ui-2-b.png",
+    ],
+    "should return true 3": [
+      "https://s3-us-west-1.amazonaws.com/chrissy-fun-bucket/ui-2-a.png",
+    ],
+    "should return false": [
+      "https://s3-us-west-1.amazonaws.com/chrissy-fun-bucket/ui-3-a.png",
+      "https://s3-us-west-1.amazonaws.com/chrissy-fun-bucket/ui-3-a.png",
+    ],
   };
 
   router.get("/build/upload-test", (ctx, next) => {
@@ -277,6 +280,7 @@ app.prepare().then(() => {
 
     const compareImages = (src1, src2) =>
       new Promise(resolve => {
+        if (!src2) return resolve(true);
         Promise.all([getImage(src1), getImage(src2)]).then(response => {
           let [image1, image2] = response;
           return resolve(!image1.equals(image2));
@@ -284,7 +288,7 @@ app.prepare().then(() => {
       });
 
     const tests = Object.keys(testImages).map(key => {
-      return compareImages(testImages[key].src1, testImages[key].src2);
+      return compareImages(...testImages[key]);
     });
 
     Promise.all(tests).then(results => {
