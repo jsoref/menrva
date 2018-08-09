@@ -6,6 +6,8 @@ const bodyParser = require("koa-body");
 const Router = require("koa-router");
 const cookie = require("koa-cookie").default;
 const uuidv4 = require("uuid/v4");
+const PNG = require("pngjs").PNG;
+const fetch = require("node-fetch");
 
 const admin = require("./admin");
 const apiAuth = require("./middleware/apiAuth");
@@ -245,6 +247,49 @@ app.prepare().then(() => {
 
     ctx.body = {};
     ctx.respond = true;
+  });
+
+  let testImages = {
+    "should return true 1": {
+      src1: "https://s3-us-west-1.amazonaws.com/chrissy-fun-bucket/ui-1-a.png",
+      src2: "https://s3-us-west-1.amazonaws.com/chrissy-fun-bucket/ui-1-b.png",
+    },
+    "should return true 2": {
+      src1: "https://s3-us-west-1.amazonaws.com/chrissy-fun-bucket/ui-2-a.png",
+      src2: "https://s3-us-west-1.amazonaws.com/chrissy-fun-bucket/ui-2-b.png",
+    },
+    "should return false": {
+      src1: "https://s3-us-west-1.amazonaws.com/chrissy-fun-bucket/ui-3-a.png",
+      src2: "https://s3-us-west-1.amazonaws.com/chrissy-fun-bucket/ui-3-a.png",
+    },
+  };
+
+  router.get("/build/upload-test", (ctx, next) => {
+    let { src1, src2 } = testImages["should return false"];
+
+    const image1 = fetch(src1).then(
+      res =>
+        new Promise(resolve => {
+          res.body.pipe(new PNG()).on("parsed", image => {
+            return resolve(image);
+          });
+        })
+    );
+
+    const image2 = fetch(src2).then(
+      res =>
+        new Promise(resolve => {
+          res.body.pipe(new PNG()).on("parsed", image => {
+            return resolve(image);
+          });
+        })
+    );
+
+    Promise.all([image1, image2]).then(response => {
+      let [image1, image2] = response;
+      console.log(!image1.equals(image2));
+      next();
+    });
   });
 
   router.post("/build/upload-finish", async ctx => {
