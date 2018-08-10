@@ -9,11 +9,9 @@ import Diff from "../components/Diff";
 import CommitData from "../components/CommitData";
 import theme from "../styles/theme";
 import api from "../util/api";
-import Pending from "../components/svg/Pending";
-import Failed from "../components/svg/Pending";
-import Approved from "../components/svg/Pending";
 import Images from "../components/svg/Images";
 import BreadCrumbs from "../components/Breadcrumbs";
+import BuildStatus from "../components/BuildStatus";
 
 class BuildContainer extends Component {
   constructor(props) {
@@ -83,11 +81,7 @@ class Build extends Component {
           /
         </BreadCrumbs>
         <BuildHeader>
-          <BuildStatus status={status}>
-            {(status == "passed" || status == "approved") && <Approved />}
-            {status == "pending" && <Pending />}
-            {status == "failed" && <Failed />}
-          </BuildStatus>
+          <BuildStatus status={status} />
           <div>
             <PullRequestTitle>
               {pr_branch || branch || "Unknown Build"}
@@ -120,19 +114,12 @@ class Build extends Component {
 export default withRouter(BuildContainer);
 export { Build };
 
-let getColor = status => {
-  if (status == "pending") return theme.yellow;
-  if (status == "passed") return theme.green;
-  if (status == "failed") return theme.red;
-  return theme.gray8;
-};
-
 let BuildHeader = styled("div")`
   background: ${theme.gray3};
   padding: 2em;
   display: grid;
   grid-template-columns: auto 1fr auto;
-  align-items: center
+  align-items: center;
 `;
 
 let PullRequestTitle = styled("div")`
@@ -148,19 +135,6 @@ let BuildNumber = styled("span")`
   margin-right: 0.5em;
 `;
 
-let BuildStatus = styled("div")`
-  background: ${theme.gray9};
-  border: 3px solid #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 3.5em;
-  width: 3.5em;
-  border-radius: 3.5em;
-  color: ${p => getColor(p.status)};
-  margin-right: 0.66em;
-`;
-
 let ApproveButton = styled("div")`
   background-color: ${theme.green};
   font-size: 1rem;
@@ -168,7 +142,10 @@ let ApproveButton = styled("div")`
   height: 3em;
   cursor: pointer;
   border-radius: 2em;
-  box-shadow: ${p => (p.status == "approved") ? "rgba(0, 0, 0, 0.05) 4px 4px 2px 2px inset" : "rgba(0,0,0,0.05) 1px 1px 5px 1px"};
+  box-shadow: ${p =>
+    p.status == "approved"
+      ? "rgba(0, 0, 0, 0.05) 4px 4px 2px 2px inset"
+      : "rgba(0,0,0,0.05) 1px 1px 5px 1px"};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -178,7 +155,6 @@ let ApproveButton = styled("div")`
   &:hover {
     transform: scale(1.05);
   }
-
 `;
 
 let SnapshotTitle = styled("div")`
