@@ -33,8 +33,13 @@ class Builds extends React.Component {
     return (
       <div>
         <BreadCrumbs>
-          <Link href="/"><a>Home</a></Link> /
-          <Link href="/"><a>{this.props.router.query.repo}</a></Link>
+          <Link href="/">
+            <a>Home</a>
+          </Link>{" "}
+          /
+          <Link href="/">
+            <a>{this.props.router.query.repo}</a>
+          </Link>
         </BreadCrumbs>
         {builds.map((build, i) => (
           <div key={i}>
