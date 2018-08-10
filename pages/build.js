@@ -10,8 +10,8 @@ import CommitData from "../components/CommitData";
 import theme from "../styles/theme";
 import api from "../util/api";
 import Pending from "../components/svg/Pending";
-import Failed from "../components/svg/Pending";
-import Approved from "../components/svg/Pending";
+import Failed from "../components/svg/Failed";
+import Approved from "../components/svg/Approved";
 import Images from "../components/svg/Images";
 import BreadCrumbs from "../components/Breadcrumbs";
 
@@ -132,7 +132,7 @@ let BuildHeader = styled("div")`
   padding: 2em;
   display: grid;
   grid-template-columns: auto 1fr auto;
-  align-items: center
+  align-items: center;
 `;
 
 let PullRequestTitle = styled("div")`
@@ -168,7 +168,10 @@ let ApproveButton = styled("div")`
   height: 3em;
   cursor: pointer;
   border-radius: 2em;
-  box-shadow: ${p => (p.status == "approved") ? "rgba(0, 0, 0, 0.05) 4px 4px 2px 2px inset" : "rgba(0,0,0,0.05) 1px 1px 5px 1px"};
+  box-shadow: ${p =>
+    p.status == "approved"
+      ? "rgba(0, 0, 0, 0.05) 4px 4px 2px 2px inset"
+      : "rgba(0,0,0,0.05) 1px 1px 5px 1px"};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -178,7 +181,6 @@ let ApproveButton = styled("div")`
   &:hover {
     transform: scale(1.05);
   }
-
 `;
 
 let SnapshotTitle = styled("div")`
