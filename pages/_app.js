@@ -117,7 +117,7 @@ export default class MyApp extends App {
             {repos ? (
               <div>
                 {repos.map((repo, i) => (
-                  <Repo key={i}>
+                  <Repo key={i} active={this.props.router.query.repo == repo}>
                     <Link href={{ pathname: "/builds", query: { repo } }}>
                       <a>{repo}</a>
                     </Link>
@@ -220,6 +220,7 @@ const Repo = styled("div")`
   border-radius: 4px;
   margin: 0.75em;
   transition: 0.2s background;
+  border-left: 6px solid ${p => (p.active ? theme.yellow : "transparent")};
 
   a {
     font-size: 0.9em;
@@ -235,4 +236,5 @@ const Repo = styled("div")`
   &:hover {
     background: ${theme.gray8};
   }
+
 `;
