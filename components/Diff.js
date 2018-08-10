@@ -121,7 +121,7 @@ class Diff extends Component {
 let DiffRow = styled("div")`
   display: grid;
   grid-template-columns: 1fr 1fr;
-  padding: 3em;
+  padding: 1.5em 3em;
   grid-column-gap: 1em;
   background: ${theme.gray1};
   cursor: pointer;
