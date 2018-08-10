@@ -11,12 +11,31 @@ const axios = require("axios");
 // https://developer.github.com/v3/checks/runs/
 // https://developer.github.com/v3/checks/suites/
 
-module.exports = async function endGithubCHeck(checkRunId, fullName, didPass) {
+module.exports = async function endGithubCheck(
+  checkRunId,
+  fullName,
+  didPass,
+  checkRun
+) {
   const baseUrl = "https://api.github.com";
   const patchPath = `${baseUrl}/repos/${fullName}/check-runs/${checkRunId}`;
   const updateNow = new Date();
   return await axios.patch(patchPath, {
-    conclusion: didPass ? "success" : "failure",
+    name: checkRun.name,
+    started_at: checkRun.started_at,
+    status: "completed",
     completed_at: updateNow.toISOString(),
+    output: {
+      title: "menrva report",
+      summary: "There are 0 failures, 2 warnings, and 1 notices.",
+      text: "There are some visual changes that need to be approved",
+      annotations: [],
+      images: [
+        // {
+        // "alt": "Super bananas",
+        // "image_url": "http://example.com/images/42"
+        // }
+      ],
+    },
   });
 };

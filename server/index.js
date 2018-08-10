@@ -162,7 +162,12 @@ app.prepare().then(() => {
       build: body.job,
     });
 
-    endGithubCheck(travis.check_run_id, body.repo, didComparePass);
+    endGithubCheck(
+      travis.check_run_id,
+      body.repo,
+      didComparePass,
+      travis.check_run
+    );
     // update github app
   });
 

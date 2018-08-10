@@ -61,6 +61,7 @@ module.exports = async function githubHooksHandler(ctx) {
 
       updateBuild(travis.job, {
         check_run_id: checkResponse.id,
+        check_run: checkResponse,
       });
 
       break;
