@@ -84,7 +84,7 @@ class Build extends Component {
         </BreadCrumbs>
         <BuildHeader>
           <BuildStatus status={status}>
-            {status == "passed" && <Approved />}
+            {(status == "passed" || status == "approved") && <Approved />}
             {status == "pending" && <Pending />}
             {status == "failed" && <Failed />}
           </BuildStatus>
@@ -99,6 +99,9 @@ class Build extends Component {
               )}
             </div>
           </div>
+          <ApproveButton status={status}>
+            {status == "approved" ? "Approved" : "Approve"}
+          </ApproveButton>
         </BuildHeader>
         {Array.from(filesMap).map(([testName, link]) => (
           <div key={testName}>
@@ -127,7 +130,9 @@ let getColor = status => {
 let BuildHeader = styled("div")`
   background: ${theme.gray3};
   padding: 2em;
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center
 `;
 
 let PullRequestTitle = styled("div")`
@@ -154,6 +159,26 @@ let BuildStatus = styled("div")`
   border-radius: 3.5em;
   color: ${p => getColor(p.status)};
   margin-right: 0.66em;
+`;
+
+let ApproveButton = styled("div")`
+  background-color: ${theme.green};
+  font-size: 1rem;
+  padding: 0 4em;
+  height: 3em;
+  cursor: pointer;
+  border-radius: 2em;
+  box-shadow: ${p => (p.status == "approved") ? "rgba(0, 0, 0, 0.05) 4px 4px 2px 2px inset" : "rgba(0,0,0,0.05) 1px 1px 5px 1px"};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  transition: 0.2s transform;
+
+  &:hover {
+    transform: scale(1.05);
+  }
+
 `;
 
 let SnapshotTitle = styled("div")`
