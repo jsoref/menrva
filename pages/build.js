@@ -70,8 +70,8 @@ class Build extends Component {
     return (
       <div>
         <BreadCrumbs>
-          <Link href="/">Home</Link> /<Link href="/">{repo}</Link> /
-          <Link href="/">{build.build}</Link> /
+          <Link href="/"><a>Home</a></Link> /<Link href="/"><a>{repo}</a></Link> /
+          <Link href="/"><a>{build.build}</a></Link> /
         </BreadCrumbs>
         <BuildHeader>
           <BuildStatus status={status}>
