@@ -6,14 +6,20 @@ const bodyParser = require("koa-body");
 const Router = require("koa-router");
 const cookie = require("koa-cookie").default;
 const uuidv4 = require("uuid/v4");
-const PNG = require("pngjs").PNG;
-const fetch = require("node-fetch");
 
 const admin = require("./admin");
 const apiAuth = require("./middleware/apiAuth");
-const githubHooksHandler = require("./hooks/github");
 
-const bucket = admin.storage().bucket();
+const getRepos = require("./api/getRepos");
+const getBuildsForRepo = require("./api/getBuildsForRepo");
+const getBuildDetails = require("./api/getBuildDetails");
+const updateBuild = require("./api/updateBuild");
+const uploadFiles = require("./api/uploadFiles");
+const githubHooksHandler = require("./hooks/github");
+const compareImagesForBuild = require("./api/compareImagesForBuild");
+const endGithubCheck = require("./api/endGithubCheck");
+const getTravisBuild = require("./api/getTravisBuild");
+const approveBuild = require("./api/approveBuild");
 
 const app = next({
   dir: path.resolve(__dirname, "../"),
@@ -74,16 +80,14 @@ app.prepare().then(() => {
 
   // API endpoint to list an array of unique repo names
   router.get("/api/repos", async ctx => {
-    const buildsRef = admin.firestore().collection("builds");
-    const snapshot = await buildsRef.get();
-    const repoArray = snapshot.docs.map(doc => doc.data().repo);
-    ctx.body = [...new Set(repoArray)];
+    ctx.body = await getRepos();
   });
 
   router.post("/api/user", async ctx => {
     const { request, user } = ctx;
     const { body } = request;
     console.log("create user", user);
+
     if (!user) {
       ctx.status = 403;
       return;
@@ -106,89 +110,18 @@ app.prepare().then(() => {
   // list from collection builds that match repo passed as param
   router.get("/api/builds/:owner/:repo", async ctx => {
     const { params } = ctx;
-    const travisRef = admin
-      .firestore()
-      .collection("builds")
-      .where("repo", "==", `${params.owner}/${params.repo}`)
-      .orderBy("started_at", "desc");
-    const snapshot = await travisRef.get();
-
-    ctx.body = await Promise.all(
-      snapshot.docs.map(async doc => {
-        const travisData = doc.data();
-        const githubRef = await admin
-          .firestore()
-          .collection("github-jobs")
-          .where(
-            "check_suite.head_sha",
-            "==",
-            travisData.pr_sha || travisData.commit
-          )
-          .get();
-        const githubDoc = githubRef.size && githubRef.docs[0].data();
-
-        let githubData = {};
-        let { check_suite } = githubDoc || {};
-        if (check_suite) {
-          let { head_commit } = check_suite;
-          githubData = {
-            head_commit,
-          };
-        }
-        return {
-          ...travisData,
-          ...githubData,
-        };
-      })
-    );
+    ctx.body = await getBuildsForRepo(params);
   });
 
-  // API endpoint to get a list of builds
-  // take a router param repo
-  // list from collection builds the repo
+  // API endpoint to get build details
   router.get("/api/build/:owner/:repo/:build", async ctx => {
     const { params } = ctx;
-    const travisRef = await admin
-      .firestore()
-      .collection("builds")
-      .where("repo", "==", `${params.owner}/${params.repo}`)
-      .where("build", "==", params.build);
-    const travisDoc = await travisRef.get();
-    const travisData = travisDoc.size && travisDoc.docs[0].data();
-    const githubRef = await admin
-      .firestore()
-      .collection("github-jobs")
-      .where(
-        "check_suite.head_sha",
-        "==",
-        travisData.pr_sha || travisData.commit
-      )
-      .get();
-    const githubDoc = githubRef.size && githubRef.docs[0].data();
+    ctx.body = await getBuildDetails({ ...params, withParent: true });
+  });
 
-    let githubData = {};
-    let { sender, check_suite } = githubDoc || {};
-    let parentDoc = {};
-    if (check_suite) {
-      let { head_commit, before } = check_suite;
-      githubData = {
-        head_commit,
-        sender,
-      };
-
-      const parentRef = await admin
-        .firestore()
-        .collection("builds")
-        .where("commit", "==", before)
-        .get();
-      parentDoc = (parentRef.size && parentRef.docs[0].data()) || {};
-    }
-
-    ctx.body = {
-      ...travisData,
-      ...githubData,
-      parent: parentDoc,
-    };
+  router.post("/api/build/:owner/:repo/:build/approve", async ctx => {
+    const { params } = ctx;
+    approveBuild(params);
   });
 
   router.post("/build/upload", async ctx => {
@@ -198,105 +131,43 @@ app.prepare().then(() => {
     const { testName, ...restBody } = body;
 
     // TODO check if token is valid
-    const allFiles = await Promise.all(
-      (Array.isArray(files.file) ? files.file : [files.file]).map(file => {
-        const fileParts = file.path.split("/");
-        return bucket.upload(file.path, {
-          destination: `${fileParts[fileParts.length - 1]}.png`,
-          metadata: {
-            contentType: "image/png",
-          },
-          public: true,
-        });
-      })
-    );
-    console.log(allFiles);
-    const uploadedFiles = allFiles.map(([{ name }]) => ({
-      link: `https://storage.googleapis.com/sercy-2de63.appspot.com/${name}`,
-      testName,
-    }));
-
-    const firestore = admin.firestore();
-    const buildRef = firestore.doc(`/builds/${body.job}`);
-    const doc = await buildRef.get();
-
-    if (!doc.data()) {
-      await buildRef.set({
-        ...restBody,
-        status: "pending",
-        token,
-        files: uploadedFiles,
-        started_at: new Date().getTime(),
-      });
-    } else {
-      await firestore.runTransaction(async t => {
-        const doc = await t.get(buildRef);
-        const data = doc.data() || {};
-        t.update(buildRef, {
-          files: [
-            ...(data.files || []),
-            ...allFiles.map(([{ name }]) => ({
-              link: `https://storage.googleapis.com/sercy-2de63.appspot.com/${name}`,
-              testName,
-            })),
-          ],
-          last_updated_at: new Date().getTime(),
-        });
-      });
-    }
+    const uploadedFiles = await uploadFiles(files, testName);
+    await updateBuild(body.job, { files: uploadedFiles, ...restBody, token });
 
     ctx.body = {};
     ctx.respond = true;
   });
 
-  router.post("/build/upload-finish", (ctx, next) => {
+  router.post("/build/upload-finish", async (ctx, next) => {
     const { request } = ctx;
     const { body } = request;
+    const [owner, repo] = body.repo.split("/");
 
-    //kick off image processing for build
+    ctx.respond = true;
+    next();
 
-    const getImage = src =>
-      fetch(src).then(
-        res =>
-          new Promise(resolve => {
-            res.body.pipe(new PNG()).on("parsed", image => {
-              return resolve(image);
-            });
-          })
-      );
-
-    const compareImages = (src1, src2) =>
-      new Promise(resolve => {
-        if (!src2) return resolve(true);
-        Promise.all([getImage(src1), getImage(src2)]).then(response => {
-          let [image1, image2] = response;
-          return resolve(!image1.equals(image2));
-        });
-      });
-
-    const tests = Object.keys(body).map(key => {
-      return compareImages(...body[key]);
+    // kick off image processing for build
+    const didComparePass = await compareImagesForBuild({
+      ...body,
+      owner,
+      repo,
     });
 
-    Promise.all(tests).then(results => {
-      console.log(results); //remove this and replace with db call
-      next();
+    await updateBuild(body.job, {
+      status: didComparePass ? "passed" : "failed",
     });
+    const travis = getTravisBuild({
+      owner,
+      repo,
+      build: body.job,
+    });
+
+    endGithubCheck(travis.check_run_id, body.repo, didComparePass);
+    // update github app
   });
 
   router.post("/github/hooks", async ctx => {
     await githubHooksHandler(ctx);
-    // ctx.body = {};
-    ctx.respond = true;
-  });
-
-  // debugging
-  router.post("/github/*", async ctx => {
-    const { request } = ctx;
-    const { body, path } = request;
-    console.log("github route hit", path, body);
-
-    ctx.res.statusCode = 500;
     // ctx.body = {};
     ctx.respond = true;
   });
@@ -313,6 +184,17 @@ app.prepare().then(() => {
 
     await defaultHandler(req, res);
     ctx.respond = false;
+  });
+
+  // debugging
+  router.post("/github/*", async ctx => {
+    const { request } = ctx;
+    const { body, path } = request;
+    console.log("github route hit", path, body);
+
+    ctx.res.statusCode = 500;
+    // ctx.body = {};
+    ctx.respond = true;
   });
 
   router.get("*", async ctx => {
