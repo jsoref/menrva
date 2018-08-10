@@ -10,7 +10,7 @@ module.exports = async function getBuildDetails({
 }) {
   const travisData = await getTravisBuild({ owner, repo, build, commit });
   const githubData = await getCommitDetails(
-    travisData?.pr_sha || travisData?.commit
+    (travisData && travisData.pr_sha) || (travisData && travisData.commit)
   );
   const parent =
     (withParent &&

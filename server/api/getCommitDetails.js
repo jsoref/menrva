@@ -11,7 +11,7 @@ module.exports = async function getCommitDetails(sha) {
   // for now always return first doc
   const doc = result.size && result.docs[0].data();
   return {
-    head_commit: doc?.check_suite?.head_commit || {},
-    before: doc?.check_suite?.before,
+    head_commit: (doc && doc.check_suite && doc.check_suite.head_commit) || {},
+    before: doc && doc.check_suite && doc.check_suite.before,
   };
 };
