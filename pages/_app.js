@@ -6,6 +6,7 @@ import firebase from "firebase";
 import reset from "../styles/reset";
 import theme from "../styles/theme";
 import Avatar from "../components/Avatar";
+import LogoFullDark from "../components/svg/LogoFullDark";
 import Link from "next/link";
 import api from "../util/api";
 import initFirebase from "../util/initFirebase";
@@ -103,8 +104,7 @@ export default class MyApp extends App {
             <SiteHeader>
               <Link href="/">
                 <HomeLink>
-                  MENRV
-                  <span style={{ marginLeft: "-2px" }}>A</span>
+                  <StyledLogoFullDark />
                 </HomeLink>
               </Link>
             </SiteHeader>
@@ -125,18 +125,33 @@ export default class MyApp extends App {
 
 const SiteSidebar = styled("div")`
   background: ${theme.gray10};
-  width: 25vw;
-  max-width: 300px;
+  width: 30vw;
+  max-width: 350px;
   min-width: 200px;
 `;
 
 const SiteHeader = styled("div")`
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 3em;
+  padding: 0 0.75em;
   width: 100%;
-  border-bottom: 1px solid ${theme.gray5};
+  position: relative;
+
+  &:after {
+    content: "";
+    display: block;
+    background: linear-gradient(to right, ${theme.red}, ${theme.yellow});
+    height: 1px;
+    width: 100%;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    z-index: 1;
+  }
+`;
+
+const StyledLogoFullDark = styled(LogoFullDark)`
+  height: 1.7em;
 `;
 
 const HomeLink = styled("div")`
