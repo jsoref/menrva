@@ -24,9 +24,9 @@ class Index extends React.Component {
           <Label>Repository</Label>
         </BuildsHeader>
         {repos.map((repo, i) => (
-          <div key={i}>
+          <Repo key={i}>
             <Link href={{ pathname: "/builds", query: { repo } }}>{repo}</Link>
-          </div>
+          </Repo>
         ))}
       </div>
     );
@@ -65,6 +65,22 @@ let Label = styled("div")`
   color: ${theme.gray6};
   font-size: 0.75em;
   text-transform: uppercase;
+`;
+
+let Repo = styled("div")`
+  a {
+    width: 100%;
+    padding: 1em 2em;
+    font-size: 1.4em;
+    display: block;
+    text-decoration: none;
+    color: ${theme.gray8};
+    border-bottom: 1px solid ${theme.gray3};
+
+    &:hover {
+      background: ${theme.gray2};
+    }
+  }
 `;
 
 export default IndexContainer;
