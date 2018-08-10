@@ -103,8 +103,6 @@ export default class MyApp extends App {
     const { Component, pageProps } = this.props;
     let { user, repos } = this.state;
 
-    console.log(repos);
-
     return (
       <Container>
         <SiteBody>
@@ -147,12 +145,13 @@ const SiteSidebar = styled("div")`
   width: 30vw;
   max-width: 350px;
   min-width: 200px;
+  min-height: 100vh;
 `;
 
 const SiteHeader = styled("div")`
   display: flex;
   align-items: center;
-  padding: 0 0.75em;
+  padding: 0 1em;
   width: 100%;
   position: relative;
 
@@ -212,12 +211,13 @@ const SiteContent = styled("div")`
 const SiteBody = styled("div")`
   font-family: ${theme.fontFamily};
   display: flex;
+  background: ${theme.gray1};
 `;
 
 const Repo = styled("div")`
   background-color: ${theme.gray9};
   border-radius: 4px;
-  margin: 1em;
+  margin: 0.75em;
   transition: 0.2s background;
 
   a {

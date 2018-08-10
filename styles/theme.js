@@ -2,7 +2,7 @@ export default {
   fontFamily: `"Gotham Narrow A", "Gotham Narrow B"`,
   gray1: "#fcfcfc",
   gray2: "#fafafa",
-  gray3: "#f0f0f0",
+  gray3: "#eaeaea",
   gray4: "#ccc",
   gray5: "#9c9bb6",
   gray6: "#7a7896",
@@ -16,6 +16,4 @@ export default {
   orange: "#e89832",
   activeColorLight: "#118c86", //green
   activeColorDark: "#f6dd55", //yellow
-
-  buildColumnLayout: "100px auto 100px 132px",
 };

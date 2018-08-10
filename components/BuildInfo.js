@@ -3,6 +3,9 @@ import styled from "react-emotion";
 import propTypes from "prop-types";
 import Link from "next/link";
 import theme from "../styles/theme";
+import ChevronRight from "./svg/ChevronRight";
+import Commit from "./svg/Commit";
+import Avatar from "./Avatar";
 
 class BuildInfo extends Component {
   static propTypes = {
@@ -13,6 +16,9 @@ class BuildInfo extends Component {
     interactive: propTypes.bool,
     showMeta: propTypes.bool,
     showApproveButton: propTypes.bool,
+    branch: propTypes.string,
+    build: propTypes.string,
+
   };
 
   time(time) {
@@ -47,34 +53,28 @@ class BuildInfo extends Component {
     return (
       <Link href={{ pathname: "/build", query: { repo, build } }}>
         <Container {...this.props}>
-          <BuildNumberAndTime>
-            <BuildNumber>{build}</BuildNumber>
-            <Time>{this.time(started_at)}</Time>
-          </BuildNumberAndTime>
-          <CommitInfo>
+          <SnapshotCount status={status}>{files.length}</SnapshotCount>
+          <div>
             <PullRequestTitle>
-              {pr_branch || branch}
-              &nbsp;
-              {head_commit?.message}
-              <span style={{ fontWeight: "normal" }}>by</span>
-              &nbsp;
-              {head_commit?.author?.name}
+              {pr_branch || branch || "Unknown Build"}
             </PullRequestTitle>
-            {pr && pr !== "false" ? (
-              <CommitHash href={url}>#{pr}</CommitHash>
-            ) : null}
-            <CommitHash>{head_commit?.sha?.slice(9)}</CommitHash>
-          </CommitInfo>
-          <SnapshotsInfo>{showMeta ? files.length : ""}</SnapshotsInfo>
-          <Status>
-            {showApproveButton ? (
-              <ApproveButton status={status}>
-                {status == "approved" ? "Approved" : "Approve"}
-              </ApproveButton>
-            ) : (
-              <BuildStatus status={status}>{status}</BuildStatus>
-            )}
-          </Status>
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <BuildNumber>#{build}</BuildNumber>
+              {head_commit && (
+                <Link href={url}>
+                  <CommitData>
+                    {head_commit?.message}
+                    <StyledAvatar
+                      email={head_commit?.author?.email}
+                      size="small"
+                    />
+                    <StyledCommit />
+                  </CommitData>
+                </Link>
+              )}
+            </div>
+          </div>
+          <StyledChevron />
         </Container>
       </Link>
     );
@@ -82,7 +82,7 @@ class BuildInfo extends Component {
 }
 
 let getColor = status => {
-  if (status == "pending") return theme.gray3;
+  if (status == "pending") return theme.yellow;
   if (status == "passed") return theme.green;
   if (status == "failed") return theme.red;
   return theme.gray8;
@@ -91,77 +91,72 @@ let getColor = status => {
 let Container = styled("div")`
   color: ${theme.gray7};
   text-decoration: none;
-  padding: 2em 0 2em;
+  padding: 2em 2.5em 2em;
   align-items: center;
   border-bottom: 1px solid ${theme.gray3};
   display: grid;
-  grid-template-columns: ${theme.buildColumnLayout};
+  grid-template-columns: 40px auto 10px;
   grid-column-gap: 3em;
   user-select: none;
+  transition: 0.2s background;
 
   &:hover {
-    background: ${p => (p.interactive ? theme.gray2 : "inherit")};
-    cursor: ${p => (p.interactive ? "pointer" : "inherit")};
+    background: ${theme.gray2};
+    cursor: pointer;
   }
 `;
 
-let CommitInfo = styled("div")`
+let SnapshotCount = styled("div")`
+  width: 3em;
+  height: 3em;
   display: flex;
-  justify-content: space-between;
-  flex-direction: column;
-`;
-
-let CommitHash = styled("span")`
-  color: ${theme.gray8};
-`;
-
-let PullRequestTitle = styled("span")`
-  font-size: 1.2em;
-  font-weight: bold;
-  text-decoration: none;
-  margin-bottom: 0.25em;
-`;
-
-let BuildNumberAndTime = styled("div")`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-`;
-
-let Time = styled("div")`
-  font-size: 0.75em;
-`;
-
-let SnapshotsInfo = styled("div")`
-  font-size: 2em;
-  font-weight: bold;
-  text-align: center;
-`;
-
-let Status = styled("div")`
-  display: flex;
+  align-items: center;
   justify-content: center;
-`;
-
-let BuildStatus = styled("div")`
-  border-radius: 5em;
-  padding: 1em 2em;
-  font-size: 0.75em;
-  background-color: ${p => getColor(p.status)};
-  color: ${theme.gray2};
-`;
-
-let BuildNumber = styled("h1")`
+  background: ${p => getColor(p.status)};
+  color: ${(p => p.status == "pending") ? "inherit" : "#fff"};
+  border-radius: 3em;
   font-weight: bold;
-  font-size: 2.1em;
 `;
 
-let ApproveButton = styled(BuildStatus)`
-  background-color: ${theme.green};
-  font-size: 1rem;
-  border: 2px solid #fff;
-  padding: 1em 4em;
-  box-shadow: rgba(0, 0, 0, 0.05) 1px 1px 5px 1px;
+let PullRequestTitle = styled("h1")`
+  font-size: 20px;
+  width: 100%;
+  margin-bottom: 0.33em;
+`;
+
+let BuildNumber = styled("span")`
+  font-weight: bold;
+  font-size: 0.9em;
+  margin-right: 0.25em;
+`;
+
+let CommitData = styled("div")`
+  display: flex;
+  align-items: center;
+  padding: 0.25em 0.5em;
+  border-radius: 4px;
+  font-size: 0.7em;
+  background: ${theme.gray3};
+`;
+
+let StyledChevron = styled(ChevronRight)`
+  height: 1.5em;
+  path {
+    stroke: ${theme.gray4};
+  }
+`;
+
+let StyledAvatar = styled(Avatar)`
+  width: 1.25em;
+  height: 1.25em;
+  margin-left: 0.25em;
+  border-radius: 10px;
+`;
+
+let StyledCommit = styled(Commit)`
+  height: 0.6em;
+  color: ${theme.gray8};
+  margin-left: 0.25em;
 `;
 
 export default BuildInfo;
