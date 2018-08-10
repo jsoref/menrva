@@ -44,7 +44,7 @@ class BuildInfo extends Component {
     return (
       <Link href={{ pathname: "/build", query: { repo, build } }}>
         <Container {...this.props}>
-          <SnapshotCount status={status}>{files.length}</SnapshotCount>
+          <SnapshotCount status={status}>{files?.length}</SnapshotCount>
           <div>
             <PullRequestTitle>
               {pr_branch || branch || "Unknown Build"}

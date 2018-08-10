@@ -6,8 +6,8 @@ import mock from "../mock-response";
 
 describe("Build", function() {
   it("renders", async function() {
-    const build = mock.builds.find(b => b.id === 134);
-    let wrapper = mount(<Build build={build} />);
+    const data = mock.builds.find(b => b.id === 134);
+    let wrapper = mount(<Build build={data} />);
     await expect(wrapper).toSnapshot();
   });
 });
