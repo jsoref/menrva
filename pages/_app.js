@@ -45,6 +45,11 @@ export default class MyApp extends App {
     // TODO: Add Sentry
   }
 
+  async getRepos() {
+    const repos = await api.get("/api/repos");
+    this.setState({ repos });
+  }
+
   componentDidMount() {
     console.log("app cdm");
     initFirebase();
@@ -58,6 +63,7 @@ export default class MyApp extends App {
           console.log("auth state changed", user);
           this.setState({ user });
           // User is signed in.
+          this.getRepos();
         } else {
           // No user is signed in.
         }
@@ -95,7 +101,9 @@ export default class MyApp extends App {
 
   render() {
     const { Component, pageProps } = this.props;
-    let { user } = this.state;
+    let { user, repos } = this.state;
+
+    console.log(repos);
 
     return (
       <Container>
@@ -108,6 +116,17 @@ export default class MyApp extends App {
                 </HomeLink>
               </Link>
             </SiteHeader>
+            {repos ? (
+              <div>
+                {repos.map((repo, i) => (
+                  <Repo key={i}>
+                    <Link href={{ pathname: "/builds", query: { repo } }}>
+                      {repo}
+                    </Link>
+                  </Repo>
+                ))}
+              </div>
+            ) : null}
           </SiteSidebar>
           <UserInfo>
             {user ? (
@@ -193,4 +212,26 @@ const SiteContent = styled("div")`
 const SiteBody = styled("div")`
   font-family: ${theme.fontFamily};
   display: flex;
+`;
+
+const Repo = styled("div")`
+  background-color: ${theme.gray9};
+  border-radius: 4px;
+  margin: 1em;
+  transition: 0.2s background;
+
+  a {
+    font-size: 0.9em;
+    padding: 1em;
+    width: 100%
+    height: 100%;
+    display: block;
+    border-radius: 4px;
+    color: #fff;
+    text-decoration: none;
+  }
+
+  &:hover {
+    background: ${theme.gray8};
+  }
 `;
