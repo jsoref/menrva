@@ -1,0 +1,10 @@
+import React from "react"
+
+const Triangle = props => (
+  <svg viewBox="0 0 8 8" {...props}>
+    <title>triangle</title>
+    <path fill="currentColor" d="M4 0l4 8H0z" />
+  </svg>
+)
+
+export default Triangle
