@@ -7,6 +7,7 @@ import reset from "../styles/reset";
 import theme from "../styles/theme";
 import Avatar from "../components/Avatar";
 import LogoFullDark from "../components/svg/LogoFullDark";
+import MarkLight from "../components/svg/MarkLight";
 import Link from "next/link";
 import api from "../util/api";
 import initFirebase from "../util/initFirebase";
@@ -133,7 +134,16 @@ export default class MyApp extends App {
               <div onClick={this.handleLogin}>Login</div>
             )}
           </UserInfo>
-          <SiteContent>{user && <Component {...pageProps} />}</SiteContent>
+          <SiteContent>
+            {user && <Component {...pageProps} />}
+            {!user && (
+              <LoginCard>
+                <StyledMarkLight />
+                <WelcomeMessage>Welcome</WelcomeMessage>
+                <LoginButton onClick={this.handleLogin}>Login</LoginButton>
+              </LoginCard>
+            )}
+          </SiteContent>
         </SiteBody>
       </Container>
     );
@@ -213,6 +223,46 @@ const SiteBody = styled("div")`
   font-family: ${theme.fontFamily};
   display: flex;
   background: ${theme.gray1};
+`;
+
+const LoginCard = styled("div")`
+  background: ${theme.gray3};
+  padding: 4em;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: rgba(0, 0, 0, 0.02) 5px 5px 10px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid #fff;
+  border-radius: 4px;
+`;
+
+const StyledMarkLight = styled(MarkLight)`
+  width: 8em;
+  margin-bottom: 1em;
+`;
+
+const LoginButton = styled("div")`
+  background: ${theme.gray8};
+  color: #fff;
+  font-size: 1.2rem;
+  padding: 1em 3em;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: 0.2s background;
+
+  &:hover {
+    background: ${theme.gray7};
+  }
+`;
+
+const WelcomeMessage = styled("div")`
+  font-size: 1em;
+  margin-bottom: 1em;
 `;
 
 const Repo = styled("div")`
