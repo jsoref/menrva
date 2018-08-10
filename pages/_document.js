@@ -20,7 +20,7 @@ export default class MyDocument extends Document {
     return (
       <html>
         <Head>
-          <title>Minrva: Sentry VR</title>
+          <title>Menrva: Sentry VR</title>
           <link rel="stylesheet" type="text/css" href="https://cloud.typography.com/7153996/6322392/css/fonts.css" />
           <style dangerouslySetInnerHTML={{ __html: this.props.css }} />
         </Head>
