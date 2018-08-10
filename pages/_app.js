@@ -205,7 +205,7 @@ const StyledAvatar = styled(Avatar)`
 `;
 
 const SiteContent = styled("div")`
-  flex-grow: 1;
+  flex: 1;
 `;
 
 const SiteBody = styled("div")`
