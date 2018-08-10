@@ -1,7 +1,7 @@
 import React from "react";
 import { mount } from "enzyme";
 
-import Index from "./index";
+import { Index } from "./index";
 
 jest.mock("../util/api", () => {
   return {
@@ -11,7 +11,7 @@ jest.mock("../util/api", () => {
 });
 describe("Index", function() {
   it("renders", async function() {
-    let wrapper = mount(<Index />);
+    let wrapper = mount(<Index repos={["billyvg/menrva"]} />);
     await expect(wrapper).toSnapshot();
   });
 });

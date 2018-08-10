@@ -1,6 +1,13 @@
 const admin = require("../admin");
 
-module.exports = async function getTravisBuild({ owner, repo, build, commit }) {
+module.exports = async function getTravisBuild({
+  owner,
+  repo,
+  build,
+  commit,
+  branch,
+  latest,
+}) {
   let query = await admin
     .firestore()
     .collection("builds")
@@ -10,6 +17,12 @@ module.exports = async function getTravisBuild({ owner, repo, build, commit }) {
     query = query.where("build", "==", build);
   } else if (commit) {
     query = query.where("commit", "==", commit);
+  } else if (branch) {
+    query = query.where("branch", "==", branch);
+  }
+
+  if (latest) {
+    query = query.orderBy("started_at", "desc");
   }
 
   const result = await query.get();

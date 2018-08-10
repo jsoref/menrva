@@ -49,21 +49,29 @@ export default {
           author: "Chrissy",
         },
       },
+      parent: {
+        files: [
+          {
+            testName: "project settings - more things",
+            link:
+              "https://s3-us-west-1.amazonaws.com/chrissy-fun-bucket/ui-3-b.jpg",
+          },
+          {
+            testName: "project settings - holy cow",
+            link:
+              "https://s3-us-west-1.amazonaws.com/chrissy-fun-bucket/ui-4-b.jpg",
+          },
+        ],
+      },
       files: [
         {
-          id: 1,
-          name: "project settings - more things",
-          src1:
+          testName: "project settings - more things",
+          link:
             "https://s3-us-west-1.amazonaws.com/chrissy-fun-bucket/ui-3-a.jpg",
-          src2:
-            "https://s3-us-west-1.amazonaws.com/chrissy-fun-bucket/ui-3-b.jpg",
         },
         {
-          id: 2,
-          name: "project settings - holy cow",
-          src1:
-            "https://s3-us-west-1.amazonaws.com/chrissy-fun-bucket/ui-4-a.jpg",
-          src2:
+          testName: "project settings - holy cow",
+          link:
             "https://s3-us-west-1.amazonaws.com/chrissy-fun-bucket/ui-4-b.jpg",
         },
       ],

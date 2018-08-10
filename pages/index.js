@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 import styled from "react-emotion";
 import Link from "next/link";
 
@@ -8,18 +9,12 @@ import theme from "../styles/theme";
 import api from "../util/api";
 
 class Index extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { repos: null };
-  }
-
-  async componentDidMount() {
-    const repos = await api.get("/api/repos");
-    this.setState({ repos });
-  }
+  static propTypes = {
+    repos: PropTypes.array,
+  };
 
   render() {
-    let { repos } = this.state;
+    let { repos } = this.props;
 
     if (!repos) return <LoadingSpinner />;
 
@@ -35,6 +30,23 @@ class Index extends React.Component {
         ))}
       </div>
     );
+  }
+}
+class IndexContainer extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { repos: null };
+  }
+
+  async componentDidMount() {
+    const repos = await api.get("/api/repos");
+    this.setState({ repos });
+  }
+
+  render() {
+    let { repos } = this.state;
+
+    return <Index repos={repos} />;
   }
 }
 
@@ -55,4 +67,5 @@ let Label = styled("div")`
   text-transform: uppercase;
 `;
 
-export default Index;
+export default IndexContainer;
+export { Index };

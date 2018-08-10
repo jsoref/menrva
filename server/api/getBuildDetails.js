@@ -14,7 +14,12 @@ module.exports = async function getBuildDetails({
   );
   const parent =
     (withParent &&
-      (await getTravisBuild({ owner, repo, commit: githubData.before }))) ||
+      (await getTravisBuild({
+        owner,
+        repo,
+        branch: "master",
+        latest: true,
+      }))) ||
     {};
 
   return {
