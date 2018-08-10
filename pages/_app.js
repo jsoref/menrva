@@ -252,6 +252,12 @@ const LoginButton = styled("div")`
   font-size: 1.2rem;
   padding: 1em 3em;
   border-radius: 4px;
+  cursor: pointer;
+  transition: 0.2s background;
+
+  &:hover {
+    background: ${theme.gray7};
+  }
 `;
 
 const WelcomeMessage = styled("div")`
