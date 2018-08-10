@@ -9,7 +9,7 @@ describe("BuildInfo", function() {
       job: "414643450",
       commit: "a2fa1e94cd1472d082cc2c24c1955e244c8d70e6",
       branch: "ref/db-calls",
-      pr_branch: "",
+      pr_branch: "fix/build-info",
       pr_slug: "",
       token: "1234",
       fileName: "index-renders",
