@@ -29,21 +29,34 @@ class BuildContainer extends Component {
     this.setState({ build });
   }
 
+  handleApprove = async () => {
+    const { router } = this.props;
+    await api.post(
+      `/api/build/${router.query.repo}/${router.query.build}/approve`
+    );
+    this.setState(state => ({
+      build: {
+        ...state.build,
+        status: "approved",
+      },
+    }));
+  };
   render() {
     let { build } = this.state;
 
     if (!build) return <LoadingSpinner />;
-    return <Build build={build} />;
+    return <Build build={build} onApprove={this.handleApprove} />;
   }
 }
 
 class Build extends Component {
   static propTypes = {
+    onApprove: propTypes.func,
     build: propTypes.object,
   };
 
   render() {
-    let { build } = this.props;
+    let { build, onApprove } = this.props;
     let {
       parent,
       files,
@@ -93,7 +106,7 @@ class Build extends Component {
               )}
             </div>
           </div>
-          <ApproveButton status={status}>
+          <ApproveButton status={status} onClick={onApprove}>
             {status == "approved" ? "Approved" : "Approve"}
           </ApproveButton>
         </BuildHeader>

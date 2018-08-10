@@ -1,17 +1,16 @@
-const admin = require("./admin");
+// const admin = require("./admin");
 
 module.exports = async function youShallPass() {
   const axios = require("axios");
   const jwt = require("jsonwebtoken");
   const fs = require("fs");
-  const date = require("date");
 
-  const firestore = admin.firestore();
+  // const firestore = admin.firestore();
 
-  const now = new Date.now();
+  const now = Math.floor(Date.now() / 1000);
 
   // supply path to pem file
-  const cert = fs.readFileSync("/Users/egsyeung/.ssh/menrva.pem");
+  const cert = fs.readFileSync("/Users/billy/Dev/menrva.pem");
 
   // create token
   // sign token
@@ -35,8 +34,9 @@ module.exports = async function youShallPass() {
   const installationId = 281903; //replace with the right way in the future
 
   // POST pass token to get installation access token
-  const installationAccessToken = await axios.post(
-    "https://api.github.com/installations/${installationId}/access_tokens",
+  const { data } = await axios.post(
+    `https://api.github.com/installations/${installationId}/access_tokens`,
+    {},
     {
       headers: {
         Authorization: "Bearer " + token,
@@ -45,14 +45,7 @@ module.exports = async function youShallPass() {
     }
   );
 
-  // POST pass installation access token to authenticate
-  const authenticateApp = await axios.post(
-    "https://api.github.com/installation/repositories",
-    {
-      headers: {
-        Authorization: "token " + installationAccessToken.token,
-        Accept: "application/vnd.github.machine-man-preview+json",
-      },
-    }
-  );
+  console.log("installation access token", data.token);
+
+  return data.token;
 };

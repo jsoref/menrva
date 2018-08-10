@@ -35,4 +35,5 @@ export default api;
 
 if (typeof window != "undefined") {
   window.api = api;
+  window.axios = axios;
 }
