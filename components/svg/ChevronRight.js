@@ -1,4 +1,4 @@
-import React from "react"
+import React from "react";
 
 const ChevronRight = props => (
   <svg viewBox="0 0 7 15" {...props}>
@@ -12,6 +12,6 @@ const ChevronRight = props => (
       strokeLinejoin="round"
     />
   </svg>
-)
+);
 
-export default ChevronRight
+export default ChevronRight;

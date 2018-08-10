@@ -1,4 +1,4 @@
-import React from "react"
+import React from "react";
 
 const MarkLight = props => (
   <svg viewBox="0 0 26 28" {...props}>
@@ -36,6 +36,6 @@ const MarkLight = props => (
       <ellipse fill="#F6DD55" cx={9.158} cy={9.343} rx={2.255} ry={2.286} />
     </g>
   </svg>
-)
+);
 
-export default MarkLight
+export default MarkLight;

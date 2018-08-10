@@ -1,6 +1,6 @@
-import React from "react"
+import React from "react";
 
-const Diamond = props => (
+const Commit = props => (
   <svg viewBox="0 0 12 6" {...props}>
     <title>commit</title>
     <g fill="currentColor">
@@ -8,6 +8,6 @@ const Diamond = props => (
       <path d="M8.5 3.75v-1h3.32v1zm-8 0v-1h3.32v1z" />
     </g>
   </svg>
-)
+);
 
-export default Diamond
+export default Commit;

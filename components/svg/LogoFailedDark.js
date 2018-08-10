@@ -1,4 +1,4 @@
-import React from "react"
+import React from "react";
 
 const LogoFullDark = props => (
   <svg viewBox="0 0 103 28" {...props}>
@@ -48,6 +48,6 @@ const LogoFullDark = props => (
       </g>
     </g>
   </svg>
-)
+);
 
-export default LogoFullDark
+export default LogoFullDark;

@@ -1,4 +1,4 @@
-import React from "react"
+import React from "react";
 
 const MarkDark = props => (
   <svg viewBox="0 0 27 28" {...props}>
@@ -43,6 +43,6 @@ const MarkDark = props => (
       </g>
     </g>
   </svg>
-)
+);
 
-export default MarkDark
+export default MarkDark;
