@@ -7,7 +7,6 @@ import BuildInfo from "../components/BuildInfo";
 import BreadCrumbs from "../components/Breadcrumbs";
 import LoadingSpinner from "../components/LoadingSpinner";
 import theme from "../styles/theme";
-import { fadeIn } from "../styles/keyframes";
 import api from "../util/api";
 
 class Builds extends React.Component {
@@ -28,7 +27,7 @@ class Builds extends React.Component {
   render() {
     let { builds } = this.state;
 
-    if (!builds) return <StyledLoadingSpinner />;
+    if (!builds) return <LoadingSpinner />;
 
     return (
       <div>
@@ -50,16 +49,5 @@ class Builds extends React.Component {
     );
   }
 }
-
-let StyledLoadingSpinner = styled(LoadingSpinner)`
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 100px;
-  height: 100px;
-  opacity: 0;
-  animation: 2s forwards ${fadeIn};
-`;
 
 export default withRouter(Builds);
