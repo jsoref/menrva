@@ -2,16 +2,18 @@ export default {
   fontFamily: `"Gotham Narrow A", "Gotham Narrow B"`,
   gray1: "#fcfcfc",
   gray2: "#fafafa",
-  gray3: "#f0f0f0",
+  gray3: "#eaeaea",
   gray4: "#ccc",
-  gray5: "#eee",
-  gray6: "#777",
-  gray7: "#555",
-  gray8: "#222",
-  gray9: "#0c0c0c",
-  gray10: "#0a0a0a",
-  red: "#d0173e",
-  green: "#17d0a8",
-  activeColor: "#17d0a8",
-  buildColumnLayout: "100px auto 100px 132px"
-}
+  gray5: "#9c9bb6",
+  gray6: "#7a7896",
+  gray7: "#5a5879",
+  gray8: "#3b3957",
+  gray9: "#252437",
+  gray10: "#191723",
+  red: "#f53a33",
+  green: "#118c86",
+  yellow: "#f6dd55",
+  orange: "#e89832",
+  activeColorLight: "#118c86", //green
+  activeColorDark: "#f6dd55", //yellow
+};

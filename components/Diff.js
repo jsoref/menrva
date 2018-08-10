@@ -90,7 +90,12 @@ class Diff extends Component {
     // TODO empty state when src doesn't exist (either 1 or 2)
     return (
       <DiffRow onClick={() => this.toggleOverlay()}>
-        <div style={{ position: "relative" }}>
+        <DiffImageContainer>
+          {this.props.src1 ? (
+            <DiffLabel type="changes">Changes</DiffLabel>
+          ) : (
+            <DiffLabel type="changes">No Diff</DiffLabel>
+          )}
           <OverlayCanvas
             innerRef={this.canvas}
             overlayVisible={this.state.overlayVisible}
@@ -103,28 +108,47 @@ class Diff extends Component {
               crossOrigin="anonymous"
             />
           )}
-        </div>
+        </DiffImageContainer>
 
-        {this.props.src2 && (
-          <DiffImage
-            alt="image2"
-            src={`${this.props.src2}?t=${new Date().getTime()}`}
-            innerRef={this.image2}
-            crossOrigin="anonymous"
-          />
-        )}
+        <DiffImageContainer>
+          {this.props.src1 ? (
+            <DiffLabel type="original">Original</DiffLabel>
+          ) : (
+            <DiffLabel type="new">New</DiffLabel>
+          )}
+          {this.props.src2 && (
+            <DiffImage
+              alt="image2"
+              src={`${this.props.src2}?t=${new Date().getTime()}`}
+              innerRef={this.image2}
+              crossOrigin="anonymous"
+            />
+          )}
+        </DiffImageContainer>
       </DiffRow>
     );
   }
 }
 
+let getColor = type => {
+  if (type == "changes") return theme.red;
+  if (type == "original") return theme.green;
+  if (type == "new") return theme.orange;
+};
+
 let DiffRow = styled("div")`
   display: grid;
   grid-template-columns: 1fr 1fr;
-  padding: 3em;
-  grid-column-gap: 1em;
+  padding: 1.5em 3em;
+  grid-column-gap: 2em;
   background: ${theme.gray1};
   cursor: pointer;
+`;
+
+let DiffImageContainer = styled("div")`
+  position: relative;
+  background: ${theme.gray3};
+  line-height: 0;
 `;
 
 let DiffImage = styled("img")`
@@ -143,6 +167,21 @@ let OverlayCanvas = styled("canvas")`
   height: auto;
   border: 2px solid ${theme.gray3};
   opacity: ${p => (p.overlayVisible ? 0.85 : 0)};
+`;
+
+let DiffLabel = styled("div")`
+  background: ${p => getColor(p.type)};
+  padding: 0.5em 1em;
+  color: #fff;
+  border-radius: 4em;
+  position: absolute;
+  top: 0;
+  right: -1em;
+  font-size: 0.75em;
+  z-index: 99;
+  transform: translateY(-50%);
+  display: flex;
+  line-height: 1;
 `;
 
 export default Diff;

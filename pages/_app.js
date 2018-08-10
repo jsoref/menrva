@@ -1,10 +1,12 @@
 import App, { Container } from "next/app";
 import React from "react";
-import styled, { hydrate, keyframes, css, injectGlobal } from "react-emotion";
+import styled, { hydrate, injectGlobal } from "react-emotion";
 import firebase from "firebase";
 
 import reset from "../styles/reset";
 import theme from "../styles/theme";
+import Avatar from "../components/Avatar";
+import LogoFullDark from "../components/svg/LogoFullDark";
 import Link from "next/link";
 import api from "../util/api";
 import initFirebase from "../util/initFirebase";
@@ -20,7 +22,7 @@ injectGlobal`
 `;
 
 export default class MyApp extends App {
-  static async getInitialProps({ Component, router, ctx }) {
+  static async getInitialProps({ Component, ctx }) {
     let pageProps = {};
 
     if (Component.getInitialProps) {
@@ -43,6 +45,11 @@ export default class MyApp extends App {
     // TODO: Add Sentry
   }
 
+  async getRepos() {
+    const repos = await api.get("/api/repos");
+    this.setState({ repos });
+  }
+
   componentDidMount() {
     console.log("app cdm");
     initFirebase();
@@ -56,6 +63,7 @@ export default class MyApp extends App {
           console.log("auth state changed", user);
           this.setState({ user });
           // User is signed in.
+          this.getRepos();
         } else {
           // No user is signed in.
         }
@@ -88,53 +96,80 @@ export default class MyApp extends App {
     } catch (error) {
       console.log(error);
       // Handle Errors here.
-      var errorCode = error.code;
-      var errorMessage = error.message;
-      // The email of the user's account used.
-      var email = error.email;
-      // The firebase.auth.AuthCredential type that was used.
-      var credential = error.credential;
-      // ...
     }
   };
 
   render() {
     const { Component, pageProps } = this.props;
-    let { user } = this.state;
+    let { user, repos } = this.state;
 
     return (
       <Container>
         <SiteBody>
-          <SiteHeader>
-            <Link href="/">
-              <HomeLink>
-                MENRV
-                <span style={{ marginLeft: "-2px" }}>A</span>
-              </HomeLink>
-            </Link>
-            <UserInfo>
-              {user ? (
-                <div>{user.displayName}</div>
-              ) : (
-                <div onClick={this.handleLogin}>Login</div>
-              )}
-            </UserInfo>
-          </SiteHeader>
-          {user && <Component {...pageProps} />}
+          <SiteSidebar>
+            <SiteHeader>
+              <Link href="/">
+                <HomeLink>
+                  <StyledLogoFullDark />
+                </HomeLink>
+              </Link>
+            </SiteHeader>
+            {repos ? (
+              <div>
+                {repos.map((repo, i) => (
+                  <Repo key={i}>
+                    <Link href={{ pathname: "/builds", query: { repo } }}>
+                      <a>{repo}</a>
+                    </Link>
+                  </Repo>
+                ))}
+              </div>
+            ) : null}
+          </SiteSidebar>
+          <UserInfo>
+            {user ? (
+              <StyledAvatar image={user.photoURL} />
+            ) : (
+              <div onClick={this.handleLogin}>Login</div>
+            )}
+          </UserInfo>
+          <SiteContent>{user && <Component {...pageProps} />}</SiteContent>
         </SiteBody>
       </Container>
     );
   }
 }
 
+const SiteSidebar = styled("div")`
+  background: ${theme.gray10};
+  width: 30vw;
+  max-width: 350px;
+  min-width: 200px;
+  min-height: 100vh;
+`;
+
 const SiteHeader = styled("div")`
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 3em;
+  padding: 0 1em;
   width: 100%;
-  border-bottom: 1px solid ${theme.gray5};
-  background: ${theme.gray8};
+  position: relative;
+
+  &:after {
+    content: "";
+    display: block;
+    background: linear-gradient(to right, ${theme.red}, ${theme.yellow});
+    height: 1px;
+    width: 100%;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    z-index: 1;
+  }
+`;
+
+const StyledLogoFullDark = styled(LogoFullDark)`
+  height: 1.7em;
 `;
 
 const HomeLink = styled("div")`
@@ -157,8 +192,46 @@ const UserInfo = styled("div")`
   text-transform: uppercase;
   font-size: 0.8em;
   cursor: pointer;
+  display: flex;
+  position: absolute;
+  right: 1em;
+  top: 0.85em;
+  z-index: 999;
+`;
+
+const StyledAvatar = styled(Avatar)`
+  width: 3em;
+  height: 3em;
+`;
+
+const SiteContent = styled("div")`
+  flex: 1;
 `;
 
 const SiteBody = styled("div")`
   font-family: ${theme.fontFamily};
+  display: flex;
+  background: ${theme.gray1};
+`;
+
+const Repo = styled("div")`
+  background-color: ${theme.gray9};
+  border-radius: 4px;
+  margin: 0.75em;
+  transition: 0.2s background;
+
+  a {
+    font-size: 0.9em;
+    padding: 1em;
+    width: 100%
+    height: 100%;
+    display: block;
+    border-radius: 4px;
+    color: #fff;
+    text-decoration: none;
+  }
+
+  &:hover {
+    background: ${theme.gray8};
+  }
 `;

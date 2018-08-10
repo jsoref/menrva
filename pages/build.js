@@ -2,13 +2,19 @@ import React, { Component } from "react";
 import styled from "react-emotion";
 import propTypes from "prop-types";
 import { withRouter } from "next/router";
+import Link from "next/link";
 
 import LoadingSpinner from "../components/LoadingSpinner";
 import { fadeIn } from "../styles/keyframes";
 import Diff from "../components/Diff";
-import BuildInfo from "../components/BuildInfo";
+import CommitData from "../components/CommitData";
 import theme from "../styles/theme";
 import api from "../util/api";
+import Pending from "../components/svg/Pending";
+import Failed from "../components/svg/Pending";
+import Approved from "../components/svg/Pending";
+import Images from "../components/svg/Images";
+import BreadCrumbs from "../components/Breadcrumbs";
 
 class BuildContainer extends Component {
   constructor(props) {
@@ -41,7 +47,16 @@ class Build extends Component {
 
   render() {
     let { build } = this.props;
-    let { parent, files } = build;
+    let {
+      parent,
+      files,
+      head_commit,
+      branch,
+      pr,
+      pr_branch,
+      status,
+      repo,
+    } = build;
     let { files: parentFiles } = parent || {};
 
     let filesMap =
@@ -54,10 +69,44 @@ class Build extends Component {
 
     return (
       <div>
-        <StyledBuildInfo {...build} showApproveButton={true} />
+        <BreadCrumbs>
+          <Link href="/">
+            <a>Home</a>
+          </Link>{" "}
+          /
+          <Link href="/">
+            <a>{repo}</a>
+          </Link>{" "}
+          /
+          <Link href="/">
+            <a>{build.build}</a>
+          </Link>{" "}
+          /
+        </BreadCrumbs>
+        <BuildHeader>
+          <BuildStatus status={status}>
+            {status == "passed" && <Approved />}
+            {status == "pending" && <Pending />}
+            {status == "failed" && <Failed />}
+          </BuildStatus>
+          <div>
+            <PullRequestTitle>
+              {pr_branch || branch || "Unknown Build"}
+            </PullRequestTitle>
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <BuildNumber>#{build.build}</BuildNumber>
+              {head_commit && (
+                <CommitData commit={head_commit} repo={repo} pr={pr} />
+              )}
+            </div>
+          </div>
+        </BuildHeader>
         {Array.from(filesMap).map(([testName, link]) => (
           <div key={testName}>
-            <BuildTitle>{testName}</BuildTitle>
+            <SnapshotTitle>
+              <StyledDiff />
+              {testName}
+            </SnapshotTitle>
             <Diff src1={parentFilesMap.get(testName)} src2={link} />
           </div>
         ))}
@@ -69,16 +118,43 @@ class Build extends Component {
 export default withRouter(BuildContainer);
 export { Build };
 
-let StyledBuildInfo = styled(BuildInfo)`
-  padding-right: 5em;
+let getColor = status => {
+  if (status == "pending") return theme.yellow;
+  if (status == "passed") return theme.green;
+  if (status == "failed") return theme.red;
+  return theme.gray8;
+};
+
+let BuildHeader = styled("div")`
+  background: ${theme.gray3};
+  padding: 2em;
+  display: flex;
 `;
 
-let BuildTitle = styled("div")`
-  font-size: 1.1em;
-  text-decoration: none;
-  padding: 1em 3em 1.2em 3em;
-  background-color: #fff;
-  border-bottom: 1px solid ${theme.gray3};
+let PullRequestTitle = styled("div")`
+  font-size: 1.8em;
+  width: 100%;
+  margin-bottom: 0.25em;
+  font-weight: 500;
+`;
+
+let BuildNumber = styled("span")`
+  font-weight: bold;
+  font-size: 0.9em;
+  margin-right: 0.5em;
+`;
+
+let BuildStatus = styled("div")`
+  background: ${theme.gray9};
+  border: 3px solid #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 3.5em;
+  width: 3.5em;
+  border-radius: 3.5em;
+  color: ${p => getColor(p.status)};
+  margin-right: 0.66em;
 `;
 
 let StyledLoadingSpinner = styled(LoadingSpinner)`
@@ -90,4 +166,21 @@ let StyledLoadingSpinner = styled(LoadingSpinner)`
   height: 100px;
   opacity: 0;
   animation: 2s forwards ${fadeIn};
+`;
+
+let SnapshotTitle = styled("div")`
+  background: rgba(0, 0, 0, 0.05);
+  padding: 0.75em 0.5em;
+  display: inline-flex;
+  margin: 2em 1em 0 3em;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+`;
+
+let StyledDiff = styled(Images)`
+  height: 1.3em;
+  width: 1.5em;
+  margin-right: 0.25em;
+  color: ${theme.gray8};
 `;
