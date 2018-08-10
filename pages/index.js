@@ -5,7 +5,6 @@ import Link from "next/link";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 import theme from "../styles/theme";
-import { fadeIn } from "../styles/keyframes";
 import api from "../util/api";
 
 class Index extends React.Component {
@@ -22,7 +21,7 @@ class Index extends React.Component {
   render() {
     let { repos } = this.state;
 
-    if (!repos) return <StyledLoadingSpinner />;
+    if (!repos) return <LoadingSpinner />;
 
     return (
       <div>
@@ -38,17 +37,6 @@ class Index extends React.Component {
     );
   }
 }
-
-let StyledLoadingSpinner = styled(LoadingSpinner)`
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 100px;
-  height: 100px;
-  opacity: 0;
-  animation: 2s forwards ${fadeIn};
-`;
 
 let BuildsHeader = styled("div")`
   display: grid;

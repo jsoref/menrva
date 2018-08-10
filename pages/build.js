@@ -5,7 +5,6 @@ import { withRouter } from "next/router";
 import Link from "next/link";
 
 import LoadingSpinner from "../components/LoadingSpinner";
-import { fadeIn } from "../styles/keyframes";
 import Diff from "../components/Diff";
 import CommitData from "../components/CommitData";
 import theme from "../styles/theme";
@@ -35,7 +34,7 @@ class BuildContainer extends Component {
   render() {
     let { build } = this.state;
 
-    if (!build) return <StyledLoadingSpinner />;
+    if (!build) return <LoadingSpinner />;
     return <Build build={build} />;
   }
 }
@@ -155,17 +154,6 @@ let BuildStatus = styled("div")`
   border-radius: 3.5em;
   color: ${p => getColor(p.status)};
   margin-right: 0.66em;
-`;
-
-let StyledLoadingSpinner = styled(LoadingSpinner)`
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 100px;
-  height: 100px;
-  opacity: 0;
-  animation: 2s forwards ${fadeIn};
 `;
 
 let SnapshotTitle = styled("div")`
