@@ -119,7 +119,7 @@ export default class MyApp extends App {
                 {repos.map((repo, i) => (
                   <Repo key={i}>
                     <Link href={{ pathname: "/builds", query: { repo } }}>
-                      {repo}
+                      <a>{repo}</a>
                     </Link>
                   </Repo>
                 ))}
