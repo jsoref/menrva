@@ -45,7 +45,16 @@ class Build extends Component {
 
   render() {
     let { build } = this.props;
-    let { parent, files, head_commit, branch, pr, pr_branch, status, repo } = build;
+    let {
+      parent,
+      files,
+      head_commit,
+      branch,
+      pr,
+      pr_branch,
+      status,
+      repo,
+    } = build;
     let { files: parentFiles } = parent || {};
 
     let filesMap =
@@ -71,7 +80,7 @@ class Build extends Component {
             <div style={{ display: "flex", alignItems: "center" }}>
               <BuildNumber>#{build.build}</BuildNumber>
               {head_commit && (
-                <CommitData commit={head_commit} repo={repo} pr={pr}/>
+                <CommitData commit={head_commit} repo={repo} pr={pr} />
               )}
             </div>
           </div>
@@ -104,7 +113,7 @@ let BuildHeader = styled("div")`
   background: ${theme.gray3};
   padding: 2em;
   display: flex;
-`
+`;
 
 let PullRequestTitle = styled("div")`
   font-size: 1.8em;
@@ -130,7 +139,7 @@ let BuildStatus = styled("div")`
   border-radius: 3.5em;
   color: ${p => getColor(p.status)};
   margin-right: 0.66em;
-`
+`;
 
 let StyledLoadingSpinner = styled(LoadingSpinner)`
   position: absolute;
@@ -158,4 +167,4 @@ let StyledDiff = styled(Images)`
   width: 1.5em;
   margin-right: 0.25em;
   color: ${theme.gray8};
-`
+`;

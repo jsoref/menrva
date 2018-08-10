@@ -10,21 +10,18 @@ export default class CommitData extends React.Component {
   static propTypes = {
     commit: propTypes.object,
     repo: propTypes.string,
-    pr: propTypes.string
+    pr: propTypes.string,
   };
 
   render() {
-    const {repo, pr, commit} = this.props;
+    const { repo, pr, commit } = this.props;
     const url = `https://github.com/${repo}/pull/${pr}`;
 
     return (
       <Link href={url}>
         <Container>
           {commit?.message}
-          <StyledAvatar
-            email={commit?.author?.email}
-            size="small"
-          />
+          <StyledAvatar email={commit?.author?.email} size="small" />
           <StyledCommit />
         </Container>
       </Link>

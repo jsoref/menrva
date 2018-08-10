@@ -18,7 +18,6 @@ class BuildInfo extends Component {
     showApproveButton: propTypes.bool,
     branch: propTypes.string,
     build: propTypes.string,
-
   };
 
   render() {
@@ -53,7 +52,7 @@ class BuildInfo extends Component {
             <div style={{ display: "flex", alignItems: "center" }}>
               <BuildNumber>#{build}</BuildNumber>
               {head_commit && (
-                <CommitData commit={head_commit} repo={repo} pr={pr}/>
+                <CommitData commit={head_commit} repo={repo} pr={pr} />
               )}
             </div>
           </div>

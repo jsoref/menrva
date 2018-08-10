@@ -1,4 +1,4 @@
-import React from "react"
+import React from "react";
 
 const Images = props => (
   <svg {...props}>
@@ -9,6 +9,6 @@ const Images = props => (
       <path d="M5.278 7.244a1.967 1.967 0 1 1 0-3.933 1.967 1.967 0 0 1 0 3.933zm0-1.6a.367.367 0 1 0 0-.733.367.367 0 0 0 0 .733zM11.111 7.576l-7.99 7.99a.8.8 0 1 1-1.131-1.132l8.555-8.555a.8.8 0 0 1 1.132 0l3.889 3.889a.8.8 0 1 1-1.132 1.131l-3.323-3.323z" />
     </g>
   </svg>
-)
+);
 
-export default Images
+export default Images;
