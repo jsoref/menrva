@@ -10,17 +10,18 @@ export default class BuildStatus extends React.Component {
   static propTypes = {
     status: propTypes.string.isRequired,
     count: propTypes.number,
+    size: propTypes.string,
   };
 
   render() {
-    let { status, count } = this.props;
+    let { status, count, size } = this.props;
 
     return (
-      <Container status={status}>
+      <Container status={status} size={size}>
         {(status == "passed" || status == "approved") && <Approved />}
         {status == "pending" && <Pending />}
         {status == "failed" && <Failed />}
-        {count && <Count status={count}>{count}</Count>}
+        {count && !(status == "passed" || status == "approved") && <Count status={status}>{count}</Count>}
       </Container>
     );
   }
@@ -39,17 +40,26 @@ let Container = styled("div")`
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 3.5em;
-  width: 3.5em;
+  height: ${p => (p.size == "small" ? "2.75em" : "3.5em")};
+  width: ${p => (p.size == "small" ? "2.75em" : "3.5em")};
   border-radius: 3.5em;
   color: ${p => getColor(p.status)};
   margin-right: 0.66em;
+  position: relative;
 `;
 
 let Count = styled("div")`
   position: absolute;
   top: 0;
   right: 0;
-  transform: translate(-100%, -100%);
-  background-color: ${p => getColor(p.status)};
+  transform: translate(35%, -40%);
+  background: ${p => getColor(p.status)};
+  color: ${p => (p.status == "pending") ? theme.gray7 : "#fff" };
+  border-radius: 2em;
+  width: 1.5em;
+  height: 1.5em;
+  font-size: 0.7em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
