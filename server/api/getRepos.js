@@ -5,5 +5,5 @@ module.exports = async function getRepos() {
     .firestore()
     .collection("builds")
     .get();
-  return [...new Set(result.docs.map(doc => doc.data().repo))];
+  return [...new Set(result.docs.map(doc => doc.data().repo).filter(d => !!d))];
 };
