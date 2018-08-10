@@ -195,7 +195,7 @@ const UserInfo = styled("div")`
   display: flex;
   position: absolute;
   right: 1em;
-  top: 0.75em;
+  top: 0.85em;
   z-index: 999;
 `;
 

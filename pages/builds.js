@@ -1,10 +1,11 @@
 import React from "react";
 import styled from "react-emotion";
+import Link from "next/link";
 import { withRouter } from "next/router";
+
 import BuildInfo from "../components/BuildInfo";
-
+import BreadCrumbs from "../components/Breadcrumbs";
 import LoadingSpinner from "../components/LoadingSpinner";
-
 import theme from "../styles/theme";
 import { fadeIn } from "../styles/keyframes";
 import api from "../util/api";
@@ -30,7 +31,11 @@ class Builds extends React.Component {
     if (!builds) return <StyledLoadingSpinner />;
 
     return (
-      <div style={{ marginTop: "1.5em" }}>
+      <div>
+        <BreadCrumbs>
+          <Link href="/">Home</Link> /
+          <Link href="/">{this.props.router.query.repo}</Link>
+        </BreadCrumbs>
         {builds.map((build, i) => (
           <div key={i}>
             <BuildInfo {...build} />

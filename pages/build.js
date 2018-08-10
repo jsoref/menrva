@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import styled from "react-emotion";
 import propTypes from "prop-types";
 import { withRouter } from "next/router";
+import Link from "next/link";
 
 import LoadingSpinner from "../components/LoadingSpinner";
 import { fadeIn } from "../styles/keyframes";
@@ -13,6 +14,7 @@ import Pending from "../components/svg/Pending";
 import Failed from "../components/svg/Pending";
 import Approved from "../components/svg/Pending";
 import Images from "../components/svg/Images";
+import BreadCrumbs from "../components/Breadcrumbs";
 
 class BuildContainer extends Component {
   constructor(props) {
@@ -67,6 +69,10 @@ class Build extends Component {
 
     return (
       <div>
+        <BreadCrumbs>
+          <Link href="/">Home</Link> /<Link href="/">{repo}</Link> /
+          <Link href="/">{build.build}</Link> /
+        </BreadCrumbs>
         <BuildHeader>
           <BuildStatus status={status}>
             {status == "passed" && <Approved />}
