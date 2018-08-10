@@ -1,4 +1,5 @@
 const axios = require("axios");
+const youShallPass = require("../hooks/github/youShallPass");
 
 // Need owner of repo and the repo name
 
@@ -20,22 +21,33 @@ module.exports = async function endGithubCheck(
   const baseUrl = "https://api.github.com";
   const patchPath = `${baseUrl}/repos/${fullName}/check-runs/${checkRunId}`;
   const updateNow = new Date();
-  return await axios.patch(patchPath, {
-    name: checkRun.name,
-    started_at: checkRun.started_at,
-    status: "completed",
-    completed_at: updateNow.toISOString(),
-    output: {
-      title: "menrva report",
-      summary: "There are 0 failures, 2 warnings, and 1 notices.",
-      text: "There are some visual changes that need to be approved",
-      annotations: [],
-      images: [
-        // {
-        // "alt": "Super bananas",
-        // "image_url": "http://example.com/images/42"
-        // }
-      ],
+  const token = await youShallPass();
+  console.log("end github check");
+  return await axios.patch(
+    patchPath,
+    {
+      name: checkRun.name,
+      started_at: checkRun.started_at,
+      status: "completed",
+      completed_at: updateNow.toISOString(),
+      output: {
+        title: "menrva report",
+        summary: "There are 0 failures, 2 warnings, and 1 notices.",
+        text: "There are some visual changes that need to be approved",
+        annotations: [],
+        images: [
+          // {
+          // "alt": "Super bananas",
+          // "image_url": "http://example.com/images/42"
+          // }
+        ],
+      },
     },
-  });
+    {
+      headers: {
+        Authorization: `token ${token}`,
+        Accept: "application/vnd.github.antiope-preview+json",
+      },
+    }
+  );
 };
