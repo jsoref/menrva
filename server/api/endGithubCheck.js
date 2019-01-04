@@ -16,7 +16,8 @@ module.exports = async function endGithubCheck(
   checkRunId,
   fullName,
   didPass,
-  checkRun
+  checkRun,
+  startedAt
 ) {
   const baseUrl = "https://api.github.com";
   const patchPath = `${baseUrl}/repos/${fullName}/check-runs/${checkRunId}`;

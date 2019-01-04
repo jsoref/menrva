@@ -121,6 +121,7 @@ app.prepare().then(() => {
 
   router.post("/api/build/:owner/:repo/:build/approve", async ctx => {
     const { params } = ctx;
+    params.startedAt = new Date();
     approveBuild(params);
   });
 

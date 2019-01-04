@@ -1,7 +1,7 @@
 const admin = require("../admin");
 
 // Updates build details
-module.exports = async function updateBuild(id, details) {
+module.exports = async function updateBuild(id, details, startedAt) {
   const firestore = admin.firestore();
   const buildRef = firestore.doc(`/builds/${id}`);
   const doc = await buildRef.get();
@@ -18,7 +18,7 @@ module.exports = async function updateBuild(id, details) {
     await buildRef.set({
       status: "pending",
       ...filteredDetails,
-      started_at: new Date().getTime(),
+      started_at: startedAt.getTime(),
     });
   } else {
     // Only allow files and status to be updated after the build has been created
@@ -29,7 +29,7 @@ module.exports = async function updateBuild(id, details) {
       t.update(buildRef, {
         files: [...(data.files || []), ...(files || [])],
         status: status || data.status,
-        last_updated_at: new Date().getTime(),
+        last_updated_at: startedAt.getTime(),
       });
     });
   }
